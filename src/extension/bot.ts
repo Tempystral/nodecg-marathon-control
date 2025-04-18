@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require("path");
-const WebSocket = require('ws');
-const express = require('express')
-const prism = require('prism-media');
-const { Mixer } = require('audio-mixer');
-const { Client, Events, GatewayIntentBits } = require('discord.js');
-const { joinVoiceChannel, EndBehaviorType, createAudioPlayer, createAudioResource, StreamType } = require('@discordjs/voice');
+import fs from 'fs';
+import path from "path";
+import WebSocket from 'ws';
+import express from 'express';
+import prism from 'prism-media';
+import { Mixer } from 'audio-mixer';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { joinVoiceChannel, EndBehaviorType, createAudioPlayer, createAudioResource, StreamType } from '@discordjs/voice';
 
 export function start(nodecg) {
 

@@ -5,6 +5,13 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "node_modules/typescript/lib"
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"prettier.prettierPath": "node_modules/prettier",
+		
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "always",
+		},
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	}
 }
