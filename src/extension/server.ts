@@ -1,9 +1,10 @@
-import { EventSubscription, OBSResponseTypes } from "obs-websocket-js";
+import { OBSResponseTypes } from "obs-websocket-js";
 import path from "path";
-import { WebSocketServer } from "ws";
-import WebSocket from "ws";
 import * as DACBot from "./bot";
 
+import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
+import * as obs from "./obs";
+import { config, get } from "./util/nodecg";
 import {
   activeRunners,
   adPlayer,
@@ -18,23 +19,15 @@ import {
   streamSync,
   timer,
 } from "./util/replicants";
-import { Socket } from "net";
-import { config, get } from "./util/nodecg";
-import * as obs from "./obs";
-import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
-
-interface Clients {
-  delay: WebSocket[];
-  bot: WebSocket[];
-}
+import { useWebsocketServer } from "./websocketServer";
 
 const nodecg = get();
 
-const wsPath = "/bundles/nodecg-marathon-control/ws";
+const { wsServer, wsPath, upgradeServer, clients } = useWebsocketServer();
+
 const lastRun = +new Date();
-let serverUpgrade = false;
+let isUpgraded = false;
 let delayArray = {};
-const clients: Clients = { delay: [], bot: [] };
 
 if (!config.ip || config.ip === "" || !config.port || config.port === "") {
   nodecg.log.error(
@@ -51,42 +44,15 @@ app.get("/delay", (req, res) =>
   res.sendFile(path.join(__dirname, "../graphics/delay.html")),
 );
 
-const wsServer = new WebSocketServer({ noServer: true });
-
 app.get(`${wsPath}/start`, (req, res) => {
-  if (!serverUpgrade) {
-    upgradeServer(req.socket, wsServer);
+  if (!isUpgraded) {
+    upgradeServer(req.socket);
+    isUpgraded = true;
   }
   res.sendStatus(200);
 });
 
 nodecg.mount(app);
-
-function upgradeServer(server: Socket, wsServer: WebSocketServer) {
-  serverUpgrade = true;
-  server.on("upgrade", (req, socket, head) => {
-    if (req.url.includes(`${wsPath}/data`)) {
-      wsServer.handleUpgrade(req, socket, head, (wsConnection) => {
-        wsServer.emit("connection", wsConnection, req);
-        //wsServer.ws = wsConnection;
-      });
-    }
-  });
-}
-
-wsServer.on("connection", (ws, req) => {
-  if (req?.url && req.url.includes(`${wsPath}/data/`)) {
-    const split = req.url.split(`${wsPath}/data/`)[1];
-    switch (split) {
-      case "delay":
-        clients.delay.push(ws);
-        break;
-      case "bot":
-        clients.bot.push(ws);
-        break;
-    }
-  }
-});
 
 // Start DACBot.
 if (botSettings.value.active) {
@@ -636,7 +602,7 @@ function syncStreams(res, newVal, autoSync) {
 }
 
 // Ad player.
-async function playAds() {
+/* async function playAds() {
   const newVal = adPlayer.value;
   nodecg.log.info("Ad requested on " + Date() + ".");
   const video = {};
@@ -767,7 +733,7 @@ async function playAds() {
       setTimeout(() => resolve(), (duration + 5) * 1000);
     });
   }
-}
+} */
 
 async function refreshVideoSource() {
   const itemList = await obs.send("GetSceneItemList", {
@@ -782,27 +748,6 @@ async function refreshVideoSource() {
   }
   adPlayer.value.adPlaying = false;
   adPlayer.value.secondsLeft = 0;
-}
-
-async function websocketDisconnect() {
-  nodecg.log.error(
-    "Disconnected from OBS instance! Attempting to reconnect...",
-  );
-  audioSources.value = [];
-  const reconnectInterval = setInterval(() => {
-    obs
-      .connect(`ws://${config.ip}:${config.port}`, config.password, {
-        eventSubscriptions: EventSubscription.All,
-      })
-      .then(() => {
-        obs.once("Identified", () => {
-          nodecg.log.info("Reconnected to OBS instance!");
-          clearInterval(reconnectInterval);
-          setup(false);
-        });
-      })
-      .catch(() => {});
-  }, 2500);
 }
 
 //     function updateCurrentScene(scene) {

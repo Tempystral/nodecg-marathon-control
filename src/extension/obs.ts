@@ -14,7 +14,7 @@ nodecg.log.info(
 
 const obs = new OBSWebSocket();
 
-export async function send<Type extends keyof OBSRequestTypes>(
+async function send<Type extends keyof OBSRequestTypes>(
   request: Type,
   data?: OBSRequestTypes[Type],
 ) {
@@ -33,6 +33,27 @@ export async function send<Type extends keyof OBSRequestTypes>(
         return;
       });
   });
+}
+
+async function websocketDisconnect() {
+  nodecg.log.error(
+    "Disconnected from OBS instance! Attempting to reconnect...",
+  );
+  audioSources.value = [];
+  const reconnectInterval = setInterval(() => {
+    obs
+      .connect(`ws://${config.ip}:${config.port}`, config.password, {
+        eventSubscriptions: EventSubscription.All,
+      })
+      .then(() => {
+        obs.once("Identified", () => {
+          nodecg.log.info("Reconnected to OBS instance!");
+          clearInterval(reconnectInterval);
+          setup(false);
+        });
+      })
+      .catch(() => {});
+  }, 2500);
 }
 
 obs
@@ -112,3 +133,5 @@ obs.on(
 
 // Transition events.
 obs.on("SceneTransitionStarted", (data) => transition(data));
+
+export { obs as ws, send };
