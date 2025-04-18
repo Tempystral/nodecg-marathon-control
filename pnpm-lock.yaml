@@ -32,6 +32,9 @@ importers:
       prism-media:
         specifier: ^1.3.5
         version: 1.3.5(@discordjs/opus@0.10.0)
+      speedcontrol-util:
+        specifier: ^0.6.1
+        version: 0.6.1
       ws:
         specifier: ^8.18.1
         version: 8.18.1
@@ -260,6 +263,9 @@ packages:
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
+
+  '@types/needle@3.3.0':
+    resolution: {integrity: sha512-UFIuc1gdyzAqeVUYpSL+cliw2MmU/ZUhVZKE7Zo4wPbgc8hbljeKSnn6ls6iG8r5jpegPXLUIhJ+Wb2kLVs8cg==}
 
   '@types/node@16.18.126':
     resolution: {integrity: sha512-OTcgaiwfGFBKacvfwuHzzn1KLxH/er8mluiy8/uM3sGXHaRe73RrSIj01jow9t4kJEW633Ov+cOexXeiApTyAw==}
@@ -503,6 +509,10 @@ packages:
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+
+  clone@2.1.2:
+    resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
+    engines: {node: '>=0.8'}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -1116,6 +1126,9 @@ packages:
   socket.io-parser@3.3.4:
     resolution: {integrity: sha512-z/pFQB3x+EZldRRzORYW1vwVO8m/3ILkswtnpoeU6Ve3cbMWkmHEWDAVJn4QJtchiiFTo5j7UG2QvwxvaA9vow==}
 
+  speedcontrol-util@0.6.1:
+    resolution: {integrity: sha512-yDqW+y+WL/QwM7V3YZ2PQYKQt2VOAM2vM+qYxCKcOCpbNBu8OViNvf2G4/gbfhn+C0CqBHYTfIg0cMMXCR1O/A==}
+
   stable-hash@0.0.5:
     resolution: {integrity: sha512-+L3ccpzibovGXFK+Ap/f8LOS0ahMrHTf3xu7mMLSpEGU0EO9ucaysSylKo9eRDFNhWve/y275iPmIZ4z39a9iA==}
 
@@ -1529,6 +1542,10 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
+  '@types/needle@3.3.0':
+    dependencies:
+      '@types/node': 22.14.1
+
   '@types/node@16.18.126': {}
 
   '@types/node@22.14.1':
@@ -1775,6 +1792,8 @@ snapshots:
       supports-color: 7.2.0
 
   chownr@2.0.0: {}
+
+  clone@2.1.2: {}
 
   color-convert@2.0.1:
     dependencies:
@@ -2376,6 +2395,11 @@ snapshots:
       isarray: 2.0.1
     transitivePeerDependencies:
       - supports-color
+
+  speedcontrol-util@0.6.1:
+    dependencies:
+      '@types/needle': 3.3.0
+      clone: 2.1.2
 
   stable-hash@0.0.5: {}
 

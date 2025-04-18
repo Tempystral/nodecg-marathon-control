@@ -1,20 +1,27 @@
-import { EventSubscription, OBSRequestTypes } from "obs-websocket-js";
+import { EventSubscription, OBSResponseTypes } from "obs-websocket-js";
 import path from "path";
+import { WebSocketServer } from "ws";
 import WebSocket from "ws";
 import * as DACBot from "./bot";
 
 import {
+  activeRunners,
   adPlayer,
+  audioSources,
   botSettings,
+  checklist,
   obsStatus,
   runDataActiveRun,
+  sceneList,
   settings,
+  stats,
   streamSync,
   timer,
 } from "./util/replicants";
 import { Socket } from "net";
 import { config, get } from "./util/nodecg";
 import * as obs from "./obs";
+import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 
 interface Clients {
   delay: WebSocket[];
@@ -44,7 +51,7 @@ app.get("/delay", (req, res) =>
   res.sendFile(path.join(__dirname, "../graphics/delay.html")),
 );
 
-const wsServer = new WebSocket.WebSocketServer({ noServer: true });
+const wsServer = new WebSocketServer({ noServer: true });
 
 app.get(`${wsPath}/start`, (req, res) => {
   if (!serverUpgrade) {
@@ -55,7 +62,7 @@ app.get(`${wsPath}/start`, (req, res) => {
 
 nodecg.mount(app);
 
-function upgradeServer(server: Socket, wsServer: WebSocket.WebSocketServer) {
+function upgradeServer(server: Socket, wsServer: WebSocketServer) {
   serverUpgrade = true;
   server.on("upgrade", (req, socket, head) => {
     if (req.url.includes(`${wsPath}/data`)) {
@@ -207,7 +214,7 @@ function resetStreamKeys() {
   }
 }
 
-function updateStreamKeys(teams) {
+function updateStreamKeys(teams: RunDataTeam[]) {
   try {
     resetStreamKeys();
     let i = 0;
@@ -288,6 +295,7 @@ async function getAudioSources() {
       });
       if (!sourceSettings.inputSettings.reroute_audio) continue;
       else if (
+        typeof sourceSettings.inputSettings.url === "string" &&
         sourceSettings.inputSettings.url.includes(
           "/bundles/nodecg-marathon-control/graphics/streamPlayer",
         )
@@ -315,28 +323,37 @@ async function getAudioSources() {
   }
   audioSources.value = audioSourceList;
 
-  async function setPlayerSource(input, sourceSettings) {
-    switch (true) {
-      case sourceSettings.inputSettings.url.includes(
-        "/bundles/nodecg-marathon-control/graphics/streamPlayer/1.html",
-      ):
-        activeRunners.value[0].source = input.inputName;
-        break;
-      case sourceSettings.inputSettings.url.includes(
-        "/bundles/nodecg-marathon-control/graphics/streamPlayer/2.html",
-      ):
-        activeRunners.value[1].source = input.inputName;
-        break;
-      case sourceSettings.inputSettings.url.includes(
-        "/bundles/nodecg-marathon-control/graphics/streamPlayer/3.html",
-      ):
-        activeRunners.value[2].source = input.inputName;
-        break;
-      case sourceSettings.inputSettings.url.includes(
-        "/bundles/nodecg-marathon-control/graphics/streamPlayer/4.html",
-      ):
-        activeRunners.value[3].source = input.inputName;
-        break;
+  // TODO clean this up, I don't like this response type from another module being here
+  async function setPlayerSource(
+    input: { inputName: string },
+    sourceSettings: OBSResponseTypes["GetInputSettings"],
+  ) {
+    if (
+      sourceSettings.inputSettings.url &&
+      typeof sourceSettings.inputSettings.url === "string"
+    ) {
+      switch (true) {
+        case sourceSettings.inputSettings.url.includes(
+          "/bundles/nodecg-marathon-control/graphics/streamPlayer/1.html",
+        ):
+          activeRunners.value[0].source = input.inputName;
+          break;
+        case sourceSettings.inputSettings.url.includes(
+          "/bundles/nodecg-marathon-control/graphics/streamPlayer/2.html",
+        ):
+          activeRunners.value[1].source = input.inputName;
+          break;
+        case sourceSettings.inputSettings.url.includes(
+          "/bundles/nodecg-marathon-control/graphics/streamPlayer/3.html",
+        ):
+          activeRunners.value[2].source = input.inputName;
+          break;
+        case sourceSettings.inputSettings.url.includes(
+          "/bundles/nodecg-marathon-control/graphics/streamPlayer/4.html",
+        ):
+          activeRunners.value[3].source = input.inputName;
+          break;
+      }
     }
   }
 }

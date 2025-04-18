@@ -4,6 +4,7 @@ import OBSWebSocket, {
   EventSubscription,
   OBSRequestTypes,
 } from "obs-websocket-js/json";
+import { audioSources, obsStatus } from "./util/replicants";
 
 const nodecg = get();
 
@@ -45,6 +46,8 @@ obs
     nodecg.log.error(e);
     process.exit(1);
   });
+
+// TODO export these methods from the server module
 
 obs.once("Identified", () => setup(true));
 

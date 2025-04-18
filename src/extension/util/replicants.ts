@@ -1,3 +1,4 @@
+import { RunDataActiveRun } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValue from "../defaultValues";
 import { get as nodecg } from "./nodecg";
 
@@ -5,6 +6,8 @@ import { get as nodecg } from "./nodecg";
  * This is where you can declare all your replicant to import easily into other files,
  * and to make sure they have any correct settings on startup.
  */
+
+// TODO put a type on all of these
 
 // Active runner data.
 const activeRunners = nodecg().Replicant("activeRunners", {
@@ -51,11 +54,14 @@ const adPlayer = nodecg().Replicant("adPlayer", {
   defaultValue: defaultValue.adPlayer,
 });
 // Checklist tasks.
-const checklist = nodecg().Replicant("checklist", {
-  defaultValue: defaultValue.checklist,
-});
+const checklist = nodecg().Replicant<typeof defaultValue.checklist>(
+  "checklist",
+  {
+    defaultValue: defaultValue.checklist,
+  },
+);
 // Active run data from nodecg()-speedcontrol.
-const runDataActiveRun = nodecg().Replicant(
+const runDataActiveRun = nodecg().Replicant<RunDataActiveRun>(
   "runDataActiveRun",
   "nodecg()-speedcontrol",
 );
