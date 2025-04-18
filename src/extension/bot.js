@@ -7,7 +7,7 @@ const { Mixer } = require('audio-mixer');
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 const { joinVoiceChannel, EndBehaviorType, createAudioPlayer, createAudioResource, StreamType } = require('@discordjs/voice');
 
-module.exports.start = (nodecg) => {
+export function start(nodecg) {
 
     let currentMembers = {};
     let silenceInterval, connection, channel;

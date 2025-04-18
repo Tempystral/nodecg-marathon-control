@@ -1,4 +1,4 @@
-module.exports.audioSourceTypes = [
+export const audioSourceTypes = [
     'wasapi_input_capture',
     'wasapi_output_capture',
     'pulse_input_capture',
@@ -8,7 +8,7 @@ module.exports.audioSourceTypes = [
     'vlc_source'
 ];
 
-module.exports.activeRunners = [
+export const activeRunners = [
     {
         source: null,
         streamKey: null,
@@ -35,7 +35,7 @@ module.exports.activeRunners = [
     }
 ];
 
-module.exports.streamSync = {
+export const streamSync = {
     active: false,
     status: {
         delays: false,
@@ -47,17 +47,17 @@ module.exports.streamSync = {
     delay: [null, null, null, null],
 }
 
-module.exports.autoRecord = {
+export const autoRecord = {
     active: false,
     filenameFormatting: '%CCYY-%MM-%DD %hh-%mm-%ss',
 }
 
-module.exports.botData = {
+export const botData = {
     connected: false,
     users: {},
 }
 
-module.exports.botSettings = {
+export const botSettings = {
     active: false,
     websocketURL: null,
     channel: null,
@@ -65,7 +65,7 @@ module.exports.botSettings = {
     channels: {}
 }
 
-module.exports.settings = {
+export const settings = {
     previewCode: '',
     programCode: '',
     intermissionScene: '',
@@ -76,7 +76,7 @@ module.exports.settings = {
     firstLaunch: true
 };
 
-module.exports.status = {
+export const status = {
     previewScene: '',
     programScene: '',
     inIntermission: false,
@@ -86,7 +86,7 @@ module.exports.status = {
     recording: false,
 }
 
-module.exports.stats = {
+export const stats = {
     cpuUsage: 0.00,
     fps: 0.00,
     kbitsPerSec: 0,
@@ -101,7 +101,7 @@ module.exports.stats = {
     freeDiskSpace: 0
 };
 
-module.exports.checklist = {
+export const checklist = {
     started: false,
     completed: false,
     default: {
@@ -118,7 +118,7 @@ module.exports.checklist = {
     customOld: {}
 }
 
-module.exports.adPlayer = {
+export const adPlayer = {
     adPlaying: false,
     videoAds: false,
     twitchAds: false,
