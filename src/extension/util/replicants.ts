@@ -1,6 +1,7 @@
-import { RunDataActiveRun } from "speedcontrol-util/types/speedcontrol";
+import { RunDataActiveRun, Timer } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValue from "../defaultValues";
 import { get as nodecg } from "./nodecg";
+import { OBSResponseTypes } from "obs-websocket-js";
 
 /**
  * This is where you can declare all your replicant to import easily into other files,
@@ -10,15 +11,35 @@ import { get as nodecg } from "./nodecg";
 // TODO put a type on all of these
 
 // Active runner data.
-const activeRunners = nodecg().Replicant("activeRunners", {
+interface ActiveRunners {
+  source: string | null;
+  streamKey: string | null;
+  server: string | null;
+  cam: boolean;
+}
+const activeRunners = nodecg().Replicant<ActiveRunners[]>("activeRunners", {
   defaultValue: defaultValue.activeRunners,
 });
 // List of all available scenes.
 const sceneList = nodecg().Replicant("sceneList", { persistent: false });
 // List of all OBS audio sources.
 const audioSources = nodecg().Replicant("audioSources");
+
 // All OBS stats.
-const stats = nodecg().Replicant("stats", {
+interface OBSStats {
+  cpuUsage: string;
+  fps: string;
+  kbitsPerSec: string;
+  averageFrameTime: string;
+  skippedFrames: string;
+  missedFrames: string;
+  droppedFrames: string;
+  totalFrames: string;
+  uptime: string;
+  diskSpace: string;
+  autoRecord: string;
+}
+const stats = nodecg().Replicant<OBSStats>("stats", {
   persistent: false,
   defaultValue: defaultValue.stats,
 });
@@ -26,8 +47,19 @@ const stats = nodecg().Replicant("stats", {
 const settings = nodecg().Replicant("settings", {
   defaultValue: defaultValue.settings,
 });
+
 // OBS data such as scenes.
-const obsStatus = nodecg().Replicant("obsStatus");
+interface OBSStatus {
+  previewScene: string;
+  programScene: string;
+  inIntermission: boolean;
+  inTransition: boolean;
+  emergencyTransition: boolean;
+  streaming: boolean;
+  recording: boolean;
+}
+const obsStatus = nodecg().Replicant<OBSStatus>("obsStatus");
+
 // Stream Sync data.
 const streamSync = nodecg().Replicant("streamSync", {
   defaultValue: defaultValue.streamSync,
@@ -66,7 +98,7 @@ const runDataActiveRun = nodecg().Replicant<RunDataActiveRun>(
   "nodecg()-speedcontrol",
 );
 // Timer from nodecg()-speedcontrol.
-const timer = nodecg().Replicant("timer", "nodecg()-speedcontrol");
+const timer = nodecg().Replicant<Timer>("timer", "nodecg()-speedcontrol");
 
 export {
   timer,

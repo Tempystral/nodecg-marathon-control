@@ -9,6 +9,7 @@ import {
   activeRunners,
   adPlayer,
   audioSources,
+  autoRecord,
   botSettings,
   checklist,
   obsStatus,
@@ -20,6 +21,9 @@ import {
   timer,
 } from "./util/replicants";
 import { useWebsocketServer } from "./websocketServer";
+import { setIntervalAsync } from "set-interval-async";
+
+import * as defaultValue from "./defaultValues";
 
 const nodecg = get();
 
@@ -122,6 +126,7 @@ async function setup(msg: boolean) {
   const recordingStatus = await obs.send("GetRecordStatus");
   const previewScene = await obs.send("GetCurrentPreviewScene");
   const programScene = await obs.send("GetCurrentProgramScene");
+
   obsStatus.value = {
     previewScene: previewScene.currentPreviewSceneName,
     programScene: programScene.currentProgramSceneName,
@@ -141,37 +146,55 @@ async function setup(msg: boolean) {
       streamSync.value.autoSync &&
       (timer.value.state === "running" || timer.value.state === "paused")
     )
-      sendSyncSignal(true);
+      sendSyncSignal();
   }, 120000);
 
-  setInterval(async () => {
-    const data = await obs.send("GetStats");
-    let streamData = {};
-    if (obsStatus.streaming)
-      streamData = await obs.send("GetOutputStatus", {
-        outputName: "adv_stream",
-      });
-    stats.value = {
-      cpuUsage: `${data.cpuUsage.toFixed(1)}%`,
-      fps: `${data.activeFps.toFixed(1)} FPS`,
-      kbitsPerSec: `? kb/s`,
-      averageFrameTime: `${data.averageFrameRenderTime.toFixed(1)} ms`,
-      skippedFrames: `${data.renderSkippedFrames} / ${data.renderTotalFrames} (${((data.renderSkippedFrames / data.renderTotalFrames) * 100).toFixed(1)}%)`,
-      missedFrames: `${data.outputSkippedFrames} / ${data.outputTotalFrames} (${((data.outputSkippedFrames / data.outputTotalFrames) * 100).toFixed(1)}%)`,
-      droppedFrames:
-        streamData.outputSkippedFrames !== undefined
-          ? `${streamData.outputSkippedFrames} / ${streamData.outputTotalFrames} (${((streamData.outputSkippedFrames / streamData.outputTotalFrames) * 100).toFixed(1)}%)`
-          : "0 / 0 (NaN%)",
-      uptime: streamData.outputTimecode
-        ? streamData.outputTimecode.slice(0, -4)
-        : "00:00:00",
-      diskSpace: `${(data.availableDiskSpace / 1024).toFixed(1)} GB`,
-      autoRecord: settings.value.autoRecord ? "Active" : "Inactive",
-    };
-  }, 2000);
+  setIntervalAsync(getStats, 2000);
 
   getScenes();
   getAudioSources();
+}
+
+async function getStats() {
+  const data = await obs.send("GetStats");
+  let streamData: OBSResponseTypes["GetOutputStatus"] = {
+    outputActive: false,
+    outputBytes: 0,
+    outputCongestion: 0,
+    outputDuration: 0,
+    outputReconnecting: false,
+    outputSkippedFrames: 0,
+    outputTimecode: "",
+    outputTotalFrames: 0,
+  };
+
+  if (obsStatus.streaming) {
+    streamData = await obs.send("GetOutputStatus", {
+      outputName: "adv_stream",
+    });
+  }
+
+  stats.value = {
+    cpuUsage: `${data.cpuUsage.toFixed(1)}%`,
+    fps: `${data.activeFps.toFixed(1)} FPS`,
+    kbitsPerSec: `? kb/s`,
+    averageFrameTime: `${data.averageFrameRenderTime.toFixed(1)} ms`,
+    skippedFrames: `${data.renderSkippedFrames} / ${data.renderTotalFrames}\
+     (${((data.renderSkippedFrames / data.renderTotalFrames) * 100).toFixed(1)}%)`,
+    missedFrames: `${data.outputSkippedFrames} / ${data.outputTotalFrames}\
+     (${((data.outputSkippedFrames / data.outputTotalFrames) * 100).toFixed(1)}%)`,
+    totalFrames: `${data.outputTotalFrames}`,
+    droppedFrames:
+      streamData.outputSkippedFrames !== undefined
+        ? `${streamData.outputSkippedFrames} / ${streamData.outputTotalFrames}\
+         (${((streamData.outputSkippedFrames / streamData.outputTotalFrames) * 100).toFixed(1)}%)`
+        : "0 / 0 (NaN%)",
+    uptime: streamData.outputTimecode
+      ? streamData.outputTimecode.slice(0, -4)
+      : "00:00:00",
+    diskSpace: `${(data.availableDiskSpace / 1024).toFixed(1)} GB`,
+    autoRecord: settings.value.autoRecord ? "Active" : "Inactive",
+  };
 }
 
 function resetStreamKeys() {
@@ -201,7 +224,7 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
     resetStreamKeys();
     return;
   }
-  if ((!oldVal && newVal) || newVal.id !== oldVal.id) {
+  if ((!oldVal && newVal) || newVal.id !== oldVal?.id) {
     if (checklist.value.started) checklist.value.default.playRun = true;
     if (settings.value.autoSetRunners) {
       try {
@@ -213,7 +236,7 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
           team.players.forEach((player) => {
             // Prefer twitch name, but if it's unset fall back to username (which cannot be null)
             activeRunners.value[i].streamKey =
-              player.social.twitch || player.social.name;
+              player.social.twitch || player.name;
             i++;
           });
         });
@@ -250,14 +273,17 @@ async function getScenes() {
 async function getAudioSources() {
   const inputs = await obs.send("GetInputList");
   const inputList = inputs.inputs.filter((input) => {
-    return defaultValue.audioSourceTypes.includes(input.inputKind);
+    return (
+      input.inputKind != null &&
+      defaultValue.audioSourceTypes.includes(input.inputKind.toString())
+    );
   });
   const audioSourceList = [];
   for (const input of inputList) {
-    if (input.inputName.includes("--")) continue;
+    if (input.inputName?.toString().includes("--")) continue;
     if (input.inputKind === "browser_source") {
       const sourceSettings = await obs.send("GetInputSettings", {
-        inputName: input.inputName,
+        inputName: input.inputName?.toString(),
       });
       if (!sourceSettings.inputSettings.reroute_audio) continue;
       else if (

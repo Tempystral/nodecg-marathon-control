@@ -14,6 +14,7 @@
     "node-fetch": "3.3.2",
     "obs-websocket-js": "^5.0.6",
     "prism-media": "^1.3.5",
+    "set-interval-async": "^3.0.3",
     "speedcontrol-util": "^0.6.1",
     "ws": "^8.18.1"
   },
