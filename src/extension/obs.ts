@@ -33,16 +33,16 @@ obs.once("Identified", () => start(true));
 
 // Listen to OBS events.
 // General events.
-obs.on("ExitStarted", () => websocketDisconnect());
+obs.on("ExitStarted", websocketDisconnect);
 obs.on("CurrentSceneCollectionChanged", () => {
   getScenes();
   getAudioSources();
 });
 
 // Scene events.
-obs.on("SceneCreated", () => getScenes());
-obs.on("SceneRemoved", () => getScenes());
-obs.on("SceneNameChanged", () => getScenes());
+obs.on("SceneCreated", getScenes);
+obs.on("SceneRemoved", getScenes);
+obs.on("SceneNameChanged", getScenes);
 obs.on("CurrentPreviewSceneChanged", (data) => setScene("preview", data));
 obs.on("CurrentProgramSceneChanged", (data) => setScene("program", data));
 
@@ -98,7 +98,7 @@ function setRecording(data: OBSEventTypes["RecordStateChanged"]) {
 // Transition events.
 obs.on("SceneTransitionStarted", transition);
 
-async function send<Type extends keyof OBSRequestTypes>(
+export async function send<Type extends keyof OBSRequestTypes>(
   request: Type,
   data?: OBSRequestTypes[Type],
 ) {
@@ -140,7 +140,7 @@ async function websocketDisconnect() {
   }, 2500);
 }
 
-export async function start(msg: boolean) {
+async function start(msg: boolean) {
   if (msg) {
     nodecg.log.info(
       `Successfully connected to OBS instance at ws://${config.ip}:${config.port}`,
@@ -245,7 +245,7 @@ obs
 
 // TODO export these methods from the server module
 
-export async function getScenes() {
+async function getScenes() {
   const scenes = await send("GetSceneList");
   const sceneArray = [];
   for (const scene of scenes.scenes) {
@@ -256,7 +256,7 @@ export async function getScenes() {
   sceneList.value = sceneArray;
 }
 
-export async function getAudioSources() {
+async function getAudioSources() {
   const inputs = await send("GetInputList");
   const inputList = inputs.inputs.filter((input) => {
     return (
@@ -361,5 +361,3 @@ async function transition() {
     }
   });
 }
-
-export { obs as ws, send };

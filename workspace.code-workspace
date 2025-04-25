@@ -1,13 +1,18 @@
 {
 	"folders": [
 		{
+			"name": "Project",
 			"path": "."
+		},
+		{
+			"name": "NodeCG",
+			"path": "/home/azurite/nodecg"
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "node_modules/typescript/lib",
+		"typescript.tsdk": "Project/node_modules/typescript/lib",
 		"prettier.prettierPath": "node_modules/prettier",
-		
+		"prettier.configPath": ".prettierrc.json",
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": "always",
 		},

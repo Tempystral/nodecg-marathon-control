@@ -16,4 +16,5 @@ export default (nodecg: NodeCG): void => {
    */
   set(nodecg);
   require("./server");
+  require("./obs");
 };

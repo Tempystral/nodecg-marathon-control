@@ -95,7 +95,7 @@ nodecg.listenFor("restartMedia", (value) =>
     propertyName: "refreshnocache",
   }),
 );
-nodecg.listenFor("refreshVideoSource", () => refreshVideoSource());
+nodecg.listenFor("refreshVideoSource", refreshVideoSource);
 
 /* TODO: Low priority */
 //nodecg.listenFor("startAd", () => playAds());
