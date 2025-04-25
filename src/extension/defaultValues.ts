@@ -1,3 +1,5 @@
+import { OBSStats } from "@nmc/types";
+
 export const audioSourceTypes = [
   "wasapi_input_capture",
   "wasapi_output_capture",
@@ -86,19 +88,18 @@ export const status = {
   recording: false,
 };
 
-export const stats = {
-  cpuUsage: 0.0,
-  fps: 0.0,
-  kbitsPerSec: 0,
-  averageFrameTime: 0.0,
-  renderMissedFrames: 0,
-  renderTotalFrames: 0,
-  outputSkippedFrames: 0,
-  outputTotalFrames: 0,
-  numDroppedFrames: 0,
-  numTotalFrames: 0,
-  totalStreamTime: 0,
-  freeDiskSpace: 0,
+export const stats: OBSStats = {
+  cpuUsage: "0.0",
+  fps: "0.0",
+  kbitsPerSec: "0",
+  averageFrameTime: "0.0",
+  missedFrames: "0",
+  totalFrames: "0",
+  skippedFrames: "0",
+  droppedFrames: "0",
+  autoRecord: "off",
+  diskSpace: "0GB",
+  uptime: "00:00:00",
 };
 
 export const checklist = {
