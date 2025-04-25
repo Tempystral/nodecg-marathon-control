@@ -1,6 +1,4 @@
-import { OBSResponseTypes } from "obs-websocket-js";
 import path from "path";
-import * as DACBot from "./bot";
 
 import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 import * as obs from "./obs";
@@ -8,30 +6,25 @@ import { config, get } from "./util/nodecg";
 import {
   activeRunners,
   adPlayer,
-  audioSources,
   autoRecord,
   botSettings,
   checklist,
   obsStatus,
   runDataActiveRun,
-  sceneList,
   settings,
-  stats,
   streamSync,
   timer,
 } from "./util/replicants";
 import { useWebsocketServer } from "./websocketServer";
-import { setIntervalAsync } from "set-interval-async";
 
-import * as defaultValue from "./defaultValues";
+import { ChecklistData, OBSStatus } from "@nmc/types";
 
 const nodecg = get();
 
-const { wsServer, wsPath, upgradeServer, clients } = useWebsocketServer();
+const { wsPath, upgradeServer } = useWebsocketServer();
 
-const lastRun = +new Date();
 let isUpgraded = false;
-let delayArray = {};
+// const delayArray = {};
 
 if (!config.ip || config.ip === "" || !config.port || config.port === "") {
   nodecg.log.error(
@@ -39,7 +32,8 @@ if (!config.ip || config.ip === "" || !config.port || config.port === "") {
       Please add the IP address and port in the config.`,
   );
   process.exit(1);
-  gracefulExit();
+
+  /* gracefulExit(); */ // IDK what this is
 }
 
 // Set up delay page.
@@ -65,7 +59,8 @@ if (botSettings.value.active) {
       nodecg.log.warn("No bot token has been provided!");
       break;
     default:
-      DACBot.start(nodecg, wsServer.bot);
+      /* DACBot.start(nodecg, wsServer.bot); */
+      // No clue what this is either
       break;
   }
 }
@@ -100,102 +95,14 @@ nodecg.listenFor("restartMedia", (value) =>
     propertyName: "refreshnocache",
   }),
 );
-nodecg.listenFor("startAd", () => playAds());
 nodecg.listenFor("refreshVideoSource", () => refreshVideoSource());
-nodecg.listenFor("returnDelay", (value) =>
+
+/* TODO: Low priority */
+//nodecg.listenFor("startAd", () => playAds());
+
+/* nodecg.listenFor("returnDelay", (value) =>
   syncStreams(value, streamSync.value),
-);
-
-async function setup(msg: boolean) {
-  if (msg) {
-    nodecg.log.info(
-      `Successfully connected to OBS instance at ws://${config.ip}:${config.port}`,
-    );
-  }
-
-  streamSync.value.status = {
-    delays: false,
-    syncing: false,
-    autoSync: false,
-  };
-  adPlayer.value.adPlaying = false;
-
-  await obs.send("SetStudioModeEnabled", { studioModeEnabled: true });
-
-  const streamStatus = await obs.send("GetStreamStatus");
-  const recordingStatus = await obs.send("GetRecordStatus");
-  const previewScene = await obs.send("GetCurrentPreviewScene");
-  const programScene = await obs.send("GetCurrentProgramScene");
-
-  obsStatus.value = {
-    previewScene: previewScene.currentPreviewSceneName,
-    programScene: programScene.currentProgramSceneName,
-    inIntermission:
-      programScene.currentProgramSceneName === settings.value.intermissionScene
-        ? true
-        : false,
-    inTransition: false,
-    emergencyTransition: false,
-    streaming: streamStatus.outputActive,
-    recording: recordingStatus.outputActive,
-  };
-
-  // Auto Stream Sync™
-  setInterval(() => {
-    if (
-      streamSync.value.autoSync &&
-      (timer.value.state === "running" || timer.value.state === "paused")
-    )
-      sendSyncSignal();
-  }, 120000);
-
-  setIntervalAsync(getStats, 2000);
-
-  getScenes();
-  getAudioSources();
-}
-
-async function getStats() {
-  const data = await obs.send("GetStats");
-  let streamData: OBSResponseTypes["GetOutputStatus"] = {
-    outputActive: false,
-    outputBytes: 0,
-    outputCongestion: 0,
-    outputDuration: 0,
-    outputReconnecting: false,
-    outputSkippedFrames: 0,
-    outputTimecode: "",
-    outputTotalFrames: 0,
-  };
-
-  if (obsStatus.streaming) {
-    streamData = await obs.send("GetOutputStatus", {
-      outputName: "adv_stream",
-    });
-  }
-
-  stats.value = {
-    cpuUsage: `${data.cpuUsage.toFixed(1)}%`,
-    fps: `${data.activeFps.toFixed(1)} FPS`,
-    kbitsPerSec: `? kb/s`,
-    averageFrameTime: `${data.averageFrameRenderTime.toFixed(1)} ms`,
-    skippedFrames: `${data.renderSkippedFrames} / ${data.renderTotalFrames}\
-     (${((data.renderSkippedFrames / data.renderTotalFrames) * 100).toFixed(1)}%)`,
-    missedFrames: `${data.outputSkippedFrames} / ${data.outputTotalFrames}\
-     (${((data.outputSkippedFrames / data.outputTotalFrames) * 100).toFixed(1)}%)`,
-    totalFrames: `${data.outputTotalFrames}`,
-    droppedFrames:
-      streamData.outputSkippedFrames !== undefined
-        ? `${streamData.outputSkippedFrames} / ${streamData.outputTotalFrames}\
-         (${((streamData.outputSkippedFrames / streamData.outputTotalFrames) * 100).toFixed(1)}%)`
-        : "0 / 0 (NaN%)",
-    uptime: streamData.outputTimecode
-      ? streamData.outputTimecode.slice(0, -4)
-      : "00:00:00",
-    diskSpace: `${(data.availableDiskSpace / 1024).toFixed(1)} GB`,
-    autoRecord: settings.value.autoRecord ? "Active" : "Inactive",
-  };
-}
+); */
 
 function resetStreamKeys() {
   for (let j = 0; j < 4; j++) {
@@ -206,17 +113,14 @@ function resetStreamKeys() {
 function updateStreamKeys(teams: RunDataTeam[]) {
   try {
     resetStreamKeys();
-    let i = 0;
     teams.forEach((team) => {
-      team.players.forEach((player) => {
-        activeRunners.value[i].streamKey = player.social.twitch;
-        i++;
+      team.players.forEach((player, i) => {
+        activeRunners.value[i].streamKey = player.social.twitch ?? "";
       });
     });
-    for (let j = i; j < 4; j++) {
-      activeRunners.value[i].streamKey = null;
-    }
-  } catch {}
+  } catch (e) {
+    nodecg.log.error(e);
+  }
 }
 
 runDataActiveRun.on("change", (newVal, oldVal) => {
@@ -261,135 +165,22 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
   }
 });
 
-async function getScenes() {
-  const scenes = await obs.send("GetSceneList");
-  const sceneArray = [];
-  for (const scene of scenes.scenes) {
-    sceneArray.push(scene.sceneName);
+function onStatusChange(newVal: OBSStatus, oldVal?: OBSStatus) {
+  if (!oldVal) {
+    return;
   }
-  sceneList.value = sceneArray;
-}
-
-async function getAudioSources() {
-  const inputs = await obs.send("GetInputList");
-  const inputList = inputs.inputs.filter((input) => {
-    return (
-      input.inputKind != null &&
-      defaultValue.audioSourceTypes.includes(input.inputKind.toString())
-    );
-  });
-  const audioSourceList = [];
-  for (const input of inputList) {
-    if (input.inputName?.toString().includes("--")) continue;
-    if (input.inputKind === "browser_source") {
-      const sourceSettings = await obs.send("GetInputSettings", {
-        inputName: input.inputName?.toString(),
-      });
-      if (!sourceSettings.inputSettings.reroute_audio) continue;
-      else if (
-        typeof sourceSettings.inputSettings.url === "string" &&
-        sourceSettings.inputSettings.url.includes(
-          "/bundles/nodecg-marathon-control/graphics/streamPlayer",
-        )
-      )
-        setPlayerSource(input, sourceSettings);
-    }
-    const volume = await obs.send("GetInputVolume", {
-      inputName: input.inputName,
-    });
-    const mute = await obs.send("GetInputMute", { inputName: input.inputName });
-    const offset = await obs.send("GetInputAudioSyncOffset", {
-      inputName: input.inputName,
-    });
-    audioSourceList.push({
-      name: input.inputName,
-      type: input.inputKind,
-      volume: {
-        mul: volume.inputVolumeMul.toFixed(1),
-        db: volume.inputVolumeDb.toFixed(1),
-      },
-      muted: mute.inputMuted,
-      offset: offset.inputAudioSyncOffset,
-      updateLocation: "server",
-    });
-  }
-  audioSources.value = audioSourceList;
-
-  // TODO clean this up, I don't like this response type from another module being here
-  async function setPlayerSource(
-    input: { inputName: string },
-    sourceSettings: OBSResponseTypes["GetInputSettings"],
-  ) {
-    if (
-      sourceSettings.inputSettings.url &&
-      typeof sourceSettings.inputSettings.url === "string"
-    ) {
-      switch (true) {
-        case sourceSettings.inputSettings.url.includes(
-          "/bundles/nodecg-marathon-control/graphics/streamPlayer/1.html",
-        ):
-          activeRunners.value[0].source = input.inputName;
-          break;
-        case sourceSettings.inputSettings.url.includes(
-          "/bundles/nodecg-marathon-control/graphics/streamPlayer/2.html",
-        ):
-          activeRunners.value[1].source = input.inputName;
-          break;
-        case sourceSettings.inputSettings.url.includes(
-          "/bundles/nodecg-marathon-control/graphics/streamPlayer/3.html",
-        ):
-          activeRunners.value[2].source = input.inputName;
-          break;
-        case sourceSettings.inputSettings.url.includes(
-          "/bundles/nodecg-marathon-control/graphics/streamPlayer/4.html",
-        ):
-          activeRunners.value[3].source = input.inputName;
-          break;
-      }
-    }
-  }
-}
-
-obsStatus.on("change", (newVal, oldVal) => {
-  if (!oldVal) return;
-  if (newVal.emergencyTransition !== oldVal.emergencyTransition)
+  if (newVal.emergencyTransition !== oldVal.emergencyTransition) {
     emergencyTransition(newVal);
-  if (newVal.inIntermission !== oldVal.inIntermission) updateChecklist(newVal);
-});
-
-// Auto record logic.
-async function transition() {
-  obsStatus.value.inTransition = true;
-  let startRecord = false;
-  if (obsStatus.value.previewScene === settings.value.intermissionScene) {
-    obsStatus.value.inIntermission = true;
-    if (
-      settings.value.autoRecord &&
-      obsStatus.value.recording &&
-      !obsStatus.value.emergencyTransition
-    )
-      await obs.send("StopRecord");
   }
-  if (
-    obsStatus.value.previewScene !== settings.value.intermissionScene &&
-    obsStatus.value.previewScene !== adPlayer.value.videoScene
-  ) {
-    startRecord = true;
-    obsStatus.value.emergencyTransition = false;
+  if (newVal.inIntermission !== oldVal.inIntermission) {
+    updateChecklist(newVal);
   }
-
-  obs.once("SceneTransitionEnded", async () => {
-    obsStatus.value.inTransition = false;
-    if (startRecord) {
-      obsStatus.value.inIntermission = false;
-      if (!obsStatus.value.recording && settings.value.autoRecord)
-        await obs.send("StartRecord");
-    }
-  });
 }
+
+obsStatus.on("change", onStatusChange);
 
 // Emergency transition logic.
-async function emergencyTransition(data) {
+async function emergencyTransition(data: OBSStatus) {
   if (!data.emergencyTransition) {
     await obs.send("TriggerStudioModeTransition");
     return;
@@ -401,15 +192,15 @@ async function emergencyTransition(data) {
   return;
 }
 
-function updateChecklist(newVal) {
+function updateChecklist(newVal: OBSStatus) {
   if (newVal.inIntermission && timer.value.state === "finished") {
-    const def = {};
+    const def = {} as ChecklistData["default"];
     const custom = {};
     for (const item of Object.keys(checklist.value.default)) {
-      def[item] = false;
+      Object.defineProperty(def, item, { value: false });
     }
-    for (const item of Object.keys(checklist.value.custom)) {
-      custom[item] = false;
+    for (const item of Object.keys(checklist.value.custom ?? {})) {
+      Object.defineProperty(custom, item, { value: false });
     }
     checklist.value = {
       started: true,
@@ -426,13 +217,16 @@ checklist.on("change", (newVal, oldVal) => {
     JSON.stringify(newVal.customOld) !==
       JSON.stringify(nodecg.bundleConfig.checklist)
   )
-    createCustomChecklist(newVal);
+    createCustomChecklist();
   if (newVal.started && !newVal.completed) {
-    for (const item of Object.keys(newVal.default)) {
+    let item: keyof typeof newVal.default;
+    for (item in newVal.default) {
       if (!newVal.default[item]) return (checklist.value.completed = false);
     }
-    for (const item of Object.keys(newVal.custom)) {
-      if (!newVal.custom[item]) return (checklist.value.completed = false);
+    for (const item of Object.keys(newVal.custom ?? {})) {
+      if (!newVal.custom?.[item]) {
+        return (checklist.value.completed = false);
+      }
     }
     setTimeout(() => {
       checklist.value.completed = true;
@@ -440,69 +234,44 @@ checklist.on("change", (newVal, oldVal) => {
   }
 });
 
-function createCustomChecklist(newVal) {
+function createCustomChecklist() {
   checklist.value.customOld = nodecg.bundleConfig.checklist;
   const custom = {};
   for (const item of Object.keys(nodecg.bundleConfig.checklist)) {
-    custom[item] = false;
+    Object.defineProperty(custom, item, { value: false });
   }
   checklist.value.custom = custom;
 }
 
 // Set filename formatting.
-async function setFilenameFormatting(filename) {
-  filename = filename.replace(
-    new RegExp("%GAME", "g"),
-    runDataActiveRun.value.game,
-  );
-  filename = filename.replace(
-    new RegExp("%CAT", "g"),
-    runDataActiveRun.value.category,
-  );
-  filename = filename.replace(
-    new RegExp("%RGN", "g"),
-    runDataActiveRun.value.region,
-  );
-  filename = filename.replace(
-    new RegExp("%REL", "g"),
-    runDataActiveRun.value.release,
-  );
-  filename = filename.replace(
-    new RegExp("%TWIT", "g"),
-    runDataActiveRun.value.gameTwitch,
-  );
-  filename = filename.replace(
-    new RegExp("%SYS", "g"),
-    runDataActiveRun.value.system,
-  );
-  filename = filename.replace(
-    new RegExp("%EST", "g"),
-    runDataActiveRun.value.estimate,
-  );
-  filename = filename.replace(
-    new RegExp("%SET", "g"),
-    runDataActiveRun.value.setupTime,
-  );
-  if (filename.includes("%RNR")) {
-    let playerString = "";
-    runDataActiveRun.value.teams.forEach((team) => {
-      team.players.forEach((player) => {
-        if (playerString === "") playerString = player.name;
-        else playerString = playerString.concat(", ", player.name);
+async function setFilenameFormatting(filename: string) {
+  if (runDataActiveRun.value) {
+    const data = runDataActiveRun.value;
+    filename = filename.replace(/%GAME/g, data.game ?? "");
+    filename = filename.replace(/%CAT/g, data.category ?? "");
+    filename = filename.replace(/%RGN/g, data.region ?? "");
+    filename = filename.replace(/%REL/g, data.release ?? "");
+    filename = filename.replace(/%TWIT/g, data.gameTwitch ?? "");
+    filename = filename.replace(/%SYS/g, data.system ?? "");
+    filename = filename.replace(/%SYS/g, data.estimate ?? "");
+    filename = filename.replace(/%SET/g, data.setupTime ?? "");
+
+    if (filename.includes("%RNR")) {
+      let playerString = "";
+      data.teams.forEach((team) => {
+        team.players.forEach((player) => {
+          if (playerString === "") {
+            playerString = player.name;
+          } else {
+            playerString = playerString.concat(", ", player.name);
+          }
+        });
       });
-    });
-    filename = filename.replace(new RegExp("%RNR", "g"), playerString);
+      filename = filename.replace(/%RNR/g, playerString);
+    }
   }
-  filename = filename.replaceAll("%", "%%");
-  filename = filename.replaceAll("<", "");
-  filename = filename.replaceAll(">", "");
-  filename = filename.replaceAll(":", "");
-  filename = filename.replaceAll('"', "");
-  filename = filename.replaceAll("/", "");
-  filename = filename.replaceAll("\\", "");
-  filename = filename.replaceAll("|", "");
-  filename = filename.replaceAll("?", "");
-  filename = filename.replaceAll("*", "");
+  filename = filename.replaceAll(/%/, "%%");
+  filename = filename.replaceAll(/[<>:\"\/\\|?*]/, "");
   await obs.send("SetProfileParameter", {
     parameterCategory: "Output",
     parameterName: "FilenameFormatting",
@@ -511,9 +280,9 @@ async function setFilenameFormatting(filename) {
 }
 
 // Get stream delay.
-nodecg.listenFor("startStreamSync", () => getStreamDelay(streamSync.value));
+/* nodecg.listenFor("startStreamSync", () => getStreamDelay(streamSync.value)); */
 
-streamSync.on("change", (newVal, oldVal) => {
+/* streamSync.on("change", (newVal, oldVal) => {
   if (!oldVal) return;
   if (
     newVal.active &&
@@ -521,11 +290,11 @@ streamSync.on("change", (newVal, oldVal) => {
     JSON.stringify(newVal.delay) !== JSON.stringify(oldVal.delay)
   )
     checkDelayArray(newVal);
-});
+}); */
 
-sendSyncSignal();
+// sendSyncSignal();
 
-function sendSyncSignal() {
+/* function sendSyncSignal() {
   let num = 0;
   setInterval(() => {
     clients.delay.forEach(async (client) => {
@@ -547,39 +316,62 @@ function sendSyncSignal() {
     num++;
     if (num > 128) num = 0;
   }, 500);
-}
+} */
 
-function getStreamDelay() {
+/* function getStreamDelay() {
   if (streamSync.value.status.delays) return;
   streamSync.value.status.delays = true;
   delayArray = [null, null, null, null];
   nodecg.sendMessage("getDelay");
-}
+} */
 
 // function sendSyncSignal(autoSync) {
-//     if (!autoSync) nodecg.log.info('Stream sync requested on ' + Date() + '.');
-//     //streamSync.value.delay = [null, null, null, null];
-//     streamSync.value.status = { delays: true, syncing: false, error: false, autoSync: autoSync, checked: 0 };
-//     clients.delay.forEach(async client => {
-//         client.obs.send(JSON.stringify({ type: 'delay', data: 'Trigger ty square!' }));
-//     });
-//     nodecg.sendMessage('getDelay');
-//     setTimeout(() => {
-//         if (streamSync.value.status.delays) {
-//             checklist.value.default.syncStreams = true;
-//             streamSync.value.status = { delays: false, syncing: false, error: true, autoSync: null, checked: null };
-//         }
-//     }, 60000)
+//   if (!autoSync) nodecg.log.info("Stream sync requested on " + Date() + ".");
+//   //streamSync.value.delay = [null, null, null, null];
+//   streamSync.value.status = {
+//     delays: true,
+//     syncing: false,
+//     error: false,
+//     autoSync: autoSync,
+//     checked: 0,
+//   };
+//   clients.delay.forEach(async (client) => {
+//     client.obs.send(
+//       JSON.stringify({ type: "delay", data: "Trigger ty square!" }),
+//     );
+//   });
+//   nodecg.sendMessage("getDelay");
+//   setTimeout(() => {
+//     if (streamSync.value.status.delays) {
+//       checklist.value.default.syncStreams = true;
+//       streamSync.value.status = {
+//         delays: false,
+//         syncing: false,
+//         error: true,
+//         autoSync: null,
+//         checked: null,
+//       };
+//     }
+//   }, 60000);
 // }
 
 // function checkDelayArray(newVal) {
-//     streamSync.value.status.checked = streamSync.value.status.checked + 1;
-//     let numRunners = activeRunners.value.filter((x) => x.streamKey !== null);
-//     if (streamSync.value.status.checked >= numRunners.length && streamSync.value.status.checked !== null) syncStreams(newVal);
+//   streamSync.value.status.checked = streamSync.value.status.checked + 1;
+//   const numRunners = activeRunners.value.filter((x) => x.streamKey !== null);
+//   if (
+//     streamSync.value.status.checked >= numRunners.length &&
+//     streamSync.value.status.checked !== null
+//   )
+//     syncStreams(newVal);
 // }
 
 // Stream Sync™
-function syncStreams(res, newVal, autoSync) {
+/* TODO: Maybe fix this but we shouldn't need it anymore */
+/* function syncStreams(
+  res: ReturnDelay,
+  newVal: StreamSyncData,
+  autoSync: boolean = false,
+) {
   delayArray[res.playerNum] = res.delay;
   if (
     delayArray.filter(Boolean).length <
@@ -621,11 +413,13 @@ function syncStreams(res, newVal, autoSync) {
       autoSync: false,
     };
     // for (let i = 0; i < 4; i++) {
-    //     if (syncArray && syncArray[i] > 0) streamSync.value.delay[i] = streamSync.value.delay[i] + syncArray[i];
+    //     if (syncArray && syncArray[i] > 0) {
+    //      streamSync.value.delay[i] = streamSync.value.delay[i] + syncArray[i];
+           }
     // }
     checklist.value.default.syncStreams = true;
   }
-}
+} */
 
 // Ad player.
 /* async function playAds() {
@@ -762,13 +556,14 @@ function syncStreams(res, newVal, autoSync) {
 } */
 
 async function refreshVideoSource() {
+  const adData = adPlayer.value;
   const itemList = await obs.send("GetSceneItemList", {
-    sceneName: adPlayer.value.videoScene,
+    sceneName: adData.videoScene ?? "",
   });
   for (const item of itemList.sceneItems) {
     if (item.inputKind !== "browser_source") continue;
     await obs.send("PressInputPropertiesButton", {
-      inputName: item.sourceName,
+      inputName: item.sourceName?.toString(),
       propertyName: "refreshnocache",
     });
   }
@@ -798,7 +593,9 @@ async function refreshVideoSource() {
 //                     checkReady: false,
 //                     finalCheck: false
 //                 }
-//                 if (!adPlayer.value.videoAds && !adPlayer.value.twitchAds) checklist.value.playAd = true;
+//                 if (!adPlayer.value.videoAds && !adPlayer.value.twitchAds) {
+//                   checklist.value.playAd = true;
+//                 }
 //             }
 //         }
 //     }
