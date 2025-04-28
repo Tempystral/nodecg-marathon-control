@@ -1,5 +1,5 @@
 import { OBSEventTypes, OBSResponseTypes } from "obs-websocket-js";
-import { get, config } from "./util/nodecg";
+import { get } from "./util/nodecg";
 import OBSWebSocket, {
   EventSubscription,
   OBSRequestTypes,
@@ -20,6 +20,7 @@ import { setIntervalAsync } from "set-interval-async";
 
 const playerPage = "/bundles/nodecg-marathon-control/graphics/streamPlayer";
 const nodecg = get();
+const config = nodecg.bundleConfig.websocket;
 
 nodecg.log.info(
   `Connecting to OBS instance at ws://${config.ip}:${config.port}...`,
@@ -80,7 +81,7 @@ obs.on("InputAudioSyncOffsetChanged", (data) => {
 });
 
 function findAudioSource(name: string) {
-  return audioSources.value.find((input) => input.name === name);
+  return audioSources.value?.find((input) => input.name === name);
 }
 
 // Output events.
@@ -202,7 +203,7 @@ async function getStats() {
     outputTotalFrames: 0,
   };
 
-  if (obsStatus.streaming) {
+  if (obsStatus.value.streaming) {
     streamData = await send("GetOutputStatus", {
       outputName: "adv_stream",
     });

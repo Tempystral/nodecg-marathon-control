@@ -1,17 +1,14 @@
-import type { NodeCG } from "nodecg-types/types/server";
+import { ServerConfig } from "@nmc/types";
+import NodeCG from "@nodecg/types";
 
-let nodecg: NodeCG;
+type ServerNodeCG = NodeCG.ServerAPI<ServerConfig>;
 
-export function set(ctx: NodeCG): void {
+let nodecg: ServerNodeCG;
+
+export function set(ctx: ServerNodeCG): void {
   nodecg = ctx;
 }
 
-export function get(): NodeCG {
+export function get(): ServerNodeCG {
   return nodecg;
 }
-
-export const config = {
-  ip: get().bundleConfig.websocket.ip,
-  port: get().bundleConfig.websocket.port,
-  password: get().bundleConfig.websocket.password,
-};

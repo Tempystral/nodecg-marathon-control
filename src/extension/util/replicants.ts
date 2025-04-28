@@ -46,7 +46,9 @@ const settings = nodecg().Replicant("settings", {
 
 // OBS data such as scenes.
 
-const obsStatus = nodecg().Replicant<OBSStatus>("obsStatus");
+const obsStatus = nodecg().Replicant<OBSStatus>("obsStatus", {
+  defaultValue: defaultValue.status,
+});
 
 // Stream Sync data.
 const streamSync = nodecg().Replicant<StreamSyncData>("streamSync", {

@@ -1,8 +1,8 @@
 import path from "path";
 
 import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
+import { get } from "./util/nodecg";
 import * as obs from "./obs";
-import { config, get } from "./util/nodecg";
 import {
   activeRunners,
   adPlayer,
@@ -20,6 +20,7 @@ import { useWebsocketServer } from "./websocketServer";
 import { ChecklistData, OBSStatus } from "@nmc/types";
 
 const nodecg = get();
+const config = nodecg.bundleConfig.websocket;
 
 const { wsPath, upgradeServer } = useWebsocketServer();
 
@@ -165,8 +166,8 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
   }
 });
 
-function onStatusChange(newVal: OBSStatus, oldVal?: OBSStatus) {
-  if (!oldVal) {
+function onStatusChange(newVal?: OBSStatus, oldVal?: OBSStatus) {
+  if (!oldVal || !newVal) {
     return;
   }
   if (newVal.emergencyTransition !== oldVal.emergencyTransition) {
@@ -193,7 +194,7 @@ async function emergencyTransition(data: OBSStatus) {
 }
 
 function updateChecklist(newVal: OBSStatus) {
-  if (newVal.inIntermission && timer.value.state === "finished") {
+  if (newVal.inIntermission && timer.value?.state === "finished") {
     const def = {} as ChecklistData["default"];
     const custom = {};
     for (const item of Object.keys(checklist.value.default)) {
