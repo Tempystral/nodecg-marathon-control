@@ -3,6 +3,6 @@ import { createApp } from "vue";
 import StatsPanel from "./panels/StatsPanel.vue";
 
 const app = createApp(StatsPanel);
-const head = createHead();
-app.use(head);
+app.use(createHead());
+
 app.mount("#app");

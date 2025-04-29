@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { OBSStatus, SettingsReplicant } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
+import Button from "primevue/button";
+import FloatLabel from "primevue/floatlabel";
+import Select from "primevue/select";
 import { ref } from "vue";
-import { NodecgButton, NodecgSelect } from "../components";
-import { NAMESPACE } from "../utils";
 
 const settings = useReplicant<SettingsReplicant>("settings", undefined)!;
 const sceneList = useReplicant<string[]>("sceneList", undefined)!;
@@ -94,16 +95,13 @@ const streamBtnDisabled = ref(false);
 const recordBtnDisabled = ref(false);
 
 function toggleStream() {
-  //nodecg.sendMessage("toggleStream");
+  nodecg.sendMessage("toggleStream");
   streamBtnDisabled.value = true;
-  //element.backgroundColor = "#485264";
 }
 
 function toggleRecording() {
-  //nodecg.sendMessage("toggleRecording");
-  //element.disabled = true;
-  //element.setAttribute("disabled", true);
-  //element.backgroundColor = "#485264";
+  nodecg.sendMessage("toggleRecording");
+  recordBtnDisabled.value = true;
 }
 
 function setPreviewWindow() {
@@ -122,58 +120,75 @@ function setProgramWindow() {
   window.open(`https://vdo.ninja/?push=${roomCode}&screenshare&mute`);
 }
 
-function setIntermissionScene(el: NodecgSelect) {
-  if (settings.data) {
-    settings.data.intermissionScene = el.value;
-  }
-}
-
 function openDialog() {
   nodecg.getDialog("welcome")?.open();
 }
+
+function enableDisable(val: boolean, text: string) {
+  return `${val ? "Disable" : "Enable"} ${text}`;
+}
 </script>
 <template>
-  <nodecg-button
-    id="toggleStream"
-    :disabled="streamBtnDisabled.valueOf()"
-    :backgroundColor="streamBtnDisabled.valueOf() ? '#485264' : '#990000'"
-    @click="toggleStream" />
-  <nodecg-button id="toggleRecording" @click="toggleRecording()" />
-  <!-- <nodecg-button
+  <div
+    v-if="settings.data"
+    style="display: flex; flex-direction: column; gap: 0.5em">
+    <Button
+      id="toggleStream"
+      :disabled="obsStatus.data?.streaming"
+      :severity="obsStatus.data?.streaming ? 'danger' : 'success'"
+      @click="toggleStream">
+      {{ obsStatus.data?.streaming ? "Stop Streaming" : "Start Streaming" }}
+    </Button>
+    <Button
+      id="toggleRecording"
+      :disabled="obsStatus.data?.recording"
+      :severity="obsStatus.data?.recording ? 'danger' : 'info'"
+      @click="toggleRecording">
+      {{ obsStatus.data?.recording ? "Stop Recording" : "Start Recording" }}
+    </Button>
+
+    <hr style="margin-inline: 1rem" />
+
+    <Button
       id="autoRunner"
-      @click="settings.data.autoSetRunners = !settings.data.autoSetRunners" />
-    <nodecg-button
+      severity="secondary"
+      @click="settings.data.autoSetRunners = !settings.data.autoSetRunners">
+      {{ enableDisable(settings.data.autoSetRunners, "Auto-Runner") }}
+    </Button>
+    <Button
       id="autoLayout"
-      @click="settings.data.autoSetLayout = !settings.data.autoSetLayout" />
-    <nodecg-button
+      severity="secondary"
+      @click="settings.data.autoSetLayout = !settings.data.autoSetLayout">
+      {{ enableDisable(settings.data.autoSetLayout, "Auto-Layout") }}
+    </Button>
+    <Button
       id="forceChecklist"
+      severity="secondary"
       @click="settings.data.forceChecklist = !settings.data.forceChecklist"
-      title="If enabled, the checklist must be complete to unlock the transition button." />
-    <nodecg-button id="selectPreviewWindow" @click="setPreviewWindow()">
+      v-tooltip.right="
+        'If enabled, the checklist must be complete to unlock the transition button.'
+      ">
+      {{ settings.data.forceChecklist ? "Don't" : "" }} Enforce Checklist
+    </Button>
+
+    <hr style="margin-inline: 1rem" />
+
+    <Button id="selectPreviewWindow" @click="setPreviewWindow">
       Select Preview Window
-    </nodecg-button>
-    <nodecg-button id="selectProgramWindow" @click="setProgramWindow()">
+    </Button>
+    <Button id="selectProgramWindow" @click="setProgramWindow">
       Select Program Window
-    </nodecg-button>
-    <nodecg-button id="showWelcome" @click="openDialog()">
-      Show Welcome Screen
-    </nodecg-button>
-    <nodecg-select
-      id="intermissionScene"
-      label="Intermission Scene"
-      @change="setIntermissionScene">
-    </nodecg-select> -->
+    </Button>
+    <Button id="showWelcome" @click="openDialog"> Show Welcome Screen </Button>
+    <FloatLabel variant="on" class="w-full">
+      <Select
+        id="intermissionScene"
+        labelid="intermission_scene"
+        v-model="settings.data.intermissionScene"
+        :options="sceneList.data"
+        class="w-full"></Select>
+      <label for="intermission_scene">Intermission Scene</label>
+    </FloatLabel>
+  </div>
 </template>
-<style>
-nodecg-button {
-  margin-top: 17px;
-}
-
-#toggleStream {
-  margin: 0;
-}
-
-nodecg-select {
-  margin-top: 15px;
-}
-</style>
+<style></style>

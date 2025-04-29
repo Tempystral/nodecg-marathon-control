@@ -93,7 +93,7 @@ function setStreaming(data: OBSEventTypes["StreamStateChanged"]) {
 }
 
 function setRecording(data: OBSEventTypes["RecordStateChanged"]) {
-  obsStatus.value.streaming = data.outputActive;
+  obsStatus.value.recording = data.outputActive;
 }
 
 // Transition events.
