@@ -2,7 +2,7 @@
 import { OBSStats } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 
-const stats = useReplicant<OBSStats>("stats", undefined);
+const stats = useReplicant<OBSStats>("stats", undefined)!;
 </script>
 <template>
   <table class="table">

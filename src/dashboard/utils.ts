@@ -1,4 +1,5 @@
-const activeRunners = nodecg.Replicant('activeRunners')
+export const NAMESPACE = "nodecg-marathon-control";
+/* const activeRunners = nodecg.Replicant('activeRunners')
 const currentScene = nodecg.Replicant('currentScene')
 const sceneList = nodecg.Replicant('sceneList')
 const audioSources = nodecg.Replicant('audioSources')
@@ -30,4 +31,4 @@ NodeCG.waitForReplicants(
     checklist
     ).then(() => {
     try { load() } catch {};
-})
+}) */

@@ -13,6 +13,9 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    sourcemap: true,
+  },
   plugins: [
     vue(),
     checker({ vueTsc: { tsconfigPath: "tsconfig.browser.json" } }),

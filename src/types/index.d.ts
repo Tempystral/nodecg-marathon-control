@@ -33,6 +33,17 @@ export interface OBSStatus {
   recording: boolean;
 }
 
+export interface SettingsReplicant {
+  previewCode: string;
+  programCode: string;
+  intermissionScene: string;
+  autoRecord: boolean;
+  autoSetLayout: boolean;
+  autoSetRunners: boolean;
+  forceChecklist: boolean;
+  firstLaunch: boolean;
+}
+
 export interface AudioSource {
   name: string;
   type: string;

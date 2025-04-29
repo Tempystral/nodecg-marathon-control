@@ -16,4 +16,5 @@ export default (nodecg: NodeCG.ServerAPI<ServerConfig>): void => {
   set(nodecg);
   require("./server");
   require("./obs");
+  //require("./util/replicants");
 };
