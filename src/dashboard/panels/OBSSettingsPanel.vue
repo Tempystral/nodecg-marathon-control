@@ -4,7 +4,7 @@ import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
 import FloatLabel from "primevue/floatlabel";
 import Select from "primevue/select";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 const settings = useReplicant<SettingsReplicant>("settings", undefined)!;
 const sceneList = useReplicant<string[]>("sceneList", undefined)!;
@@ -95,14 +95,26 @@ const streamBtnDisabled = ref(false);
 const recordBtnDisabled = ref(false);
 
 function toggleStream() {
-  nodecg.sendMessage("toggleStream");
   streamBtnDisabled.value = true;
+  nodecg.sendMessage("toggleStream");
 }
 
 function toggleRecording() {
-  nodecg.sendMessage("toggleRecording");
   recordBtnDisabled.value = true;
+  nodecg.sendMessage("toggleRecording");
 }
+
+watch(
+  () => obsStatus.data,
+  (newData, oldData) => {
+    if (newData?.streaming != oldData?.streaming) {
+      streamBtnDisabled.value = false;
+    }
+    if (newData?.recording != oldData?.recording) {
+      recordBtnDisabled.value = false;
+    }
+  },
+);
 
 function setPreviewWindow() {
   const roomCode = Math.random().toString(36).substring(2);
@@ -131,17 +143,22 @@ function enableDisable(val: boolean, text: string) {
 <template>
   <div
     v-if="settings.data"
-    style="display: flex; flex-direction: column; gap: 0.5em">
+    style="
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      margin-inline: 0.25em;
+    ">
     <Button
       id="toggleStream"
-      :disabled="obsStatus.data?.streaming"
+      :disabled="streamBtnDisabled"
       :severity="obsStatus.data?.streaming ? 'danger' : 'success'"
       @click="toggleStream">
       {{ obsStatus.data?.streaming ? "Stop Streaming" : "Start Streaming" }}
     </Button>
     <Button
       id="toggleRecording"
-      :disabled="obsStatus.data?.recording"
+      :disabled="recordBtnDisabled"
       :severity="obsStatus.data?.recording ? 'danger' : 'info'"
       @click="toggleRecording">
       {{ obsStatus.data?.recording ? "Stop Recording" : "Start Recording" }}
@@ -173,13 +190,21 @@ function enableDisable(val: boolean, text: string) {
 
     <hr style="margin-inline: 1rem" />
 
-    <Button id="selectPreviewWindow" @click="setPreviewWindow">
+    <Button
+      id="selectPreviewWindow"
+      severity="secondary"
+      @click="setPreviewWindow">
       Select Preview Window
     </Button>
-    <Button id="selectProgramWindow" @click="setProgramWindow">
+    <Button
+      id="selectProgramWindow"
+      severity="secondary"
+      @click="setProgramWindow">
       Select Program Window
     </Button>
-    <Button id="showWelcome" @click="openDialog"> Show Welcome Screen </Button>
+    <Button id="showWelcome" severity="secondary" @click="openDialog">
+      Show Welcome Screen
+    </Button>
     <FloatLabel variant="on" class="w-full">
       <Select
         id="intermissionScene"
@@ -191,4 +216,3 @@ function enableDisable(val: boolean, text: string) {
     </FloatLabel>
   </div>
 </template>
-<style></style>

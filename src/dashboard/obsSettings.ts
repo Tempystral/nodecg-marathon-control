@@ -4,6 +4,7 @@ import OBSSettingsPanel from "./panels/OBSSettingsPanel.vue";
 import PrimeVue from "primevue/config";
 import Theme from "@primeuix/themes/aura";
 import Tooltip from "primevue/tooltip";
+import "./style.css";
 
 const app = createApp(OBSSettingsPanel);
 const head = createHead();
