@@ -222,16 +222,19 @@ checklist.on("change", (newVal, oldVal) => {
   if (newVal.started && !newVal.completed) {
     let item: keyof typeof newVal.default;
     for (item in newVal.default) {
-      if (!newVal.default[item]) return (checklist.value.completed = false);
+      if (!newVal.default[item]) {
+        checklist.value.completed = false;
+        return;
+      }
     }
     for (const item of Object.keys(newVal.custom ?? {})) {
       if (!newVal.custom?.[item]) {
         return (checklist.value.completed = false);
       }
     }
-    setTimeout(() => {
-      checklist.value.completed = true;
-    }, 100);
+    // setTimeout(() => {
+    //   checklist.value.completed = true;
+    // }, 100);
   }
 });
 

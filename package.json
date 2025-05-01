@@ -104,6 +104,12 @@
         "width": 3,
         "file": "obsSettings.html",
         "workspace": "Settings"
+      },
+      {
+        "name": "checklist",
+        "title": "Checklist",
+        "width": 3,
+        "file": "checklist.html"
       }
     ]
   }

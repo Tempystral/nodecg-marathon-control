@@ -1,8 +1,4 @@
-import { createHead } from "@vueuse/head";
-import { createApp } from "vue";
 import StatsPanel from "./panels/StatsPanel.vue";
+import { create } from "./template";
 
-const app = createApp(StatsPanel);
-app.use(createHead());
-
-app.mount("#app");
+const app = create(StatsPanel);
