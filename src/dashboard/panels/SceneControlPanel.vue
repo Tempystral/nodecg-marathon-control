@@ -108,7 +108,7 @@ function startAd() {
   nodecg.sendMessage("startAd");
 }
 
-const previewScene = ref("");
+const previewScene = ref(sceneList.data?.[0] ?? "");
 
 watch(previewScene, (newVal, oldVal) => {
   if (newVal != oldVal) {

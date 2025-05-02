@@ -121,6 +121,7 @@ function setPreviewWindow() {
   if (settings.data) {
     settings.data.previewCode = roomCode;
   }
+  settings.save();
   window.open(`https://vdo.ninja/?push=${roomCode}&screenshare&mute`);
 }
 
@@ -129,6 +130,7 @@ function setProgramWindow() {
   if (settings.data) {
     settings.data.programCode = roomCode;
   }
+  settings.save();
   window.open(`https://vdo.ninja/?push=${roomCode}&screenshare&mute`);
 }
 
@@ -138,6 +140,27 @@ function openDialog() {
 
 function enableDisable(val: boolean, text: string) {
   return `${val ? "Disable" : "Enable"} ${text}`;
+}
+
+function toggleEnforceChecklist() {
+  if (settings.data) {
+    settings.data.forceChecklist = !settings.data.forceChecklist;
+    settings.save();
+  }
+}
+
+function toggleAutoLayout() {
+  if (settings.data) {
+    settings.data.autoSetLayout = !settings.data.autoSetLayout;
+    settings.save();
+  }
+}
+
+function toggleAutoRunner() {
+  if (settings.data) {
+    settings.data.autoSetRunners = !settings.data.autoSetRunners;
+    settings.save();
+  }
 }
 </script>
 <template>
@@ -166,22 +189,16 @@ function enableDisable(val: boolean, text: string) {
 
     <hr style="margin-inline: 1rem" />
 
-    <Button
-      id="autoRunner"
-      severity="secondary"
-      @click="settings.data.autoSetRunners = !settings.data.autoSetRunners">
+    <Button id="autoRunner" severity="secondary" @click="toggleAutoRunner">
       {{ enableDisable(settings.data.autoSetRunners, "Auto-Runner") }}
     </Button>
-    <Button
-      id="autoLayout"
-      severity="secondary"
-      @click="settings.data.autoSetLayout = !settings.data.autoSetLayout">
+    <Button id="autoLayout" severity="secondary" @click="toggleAutoLayout">
       {{ enableDisable(settings.data.autoSetLayout, "Auto-Layout") }}
     </Button>
     <Button
       id="forceChecklist"
       severity="secondary"
-      @click="settings.data.forceChecklist = !settings.data.forceChecklist"
+      @click="toggleEnforceChecklist"
       v-tooltip.right="
         'If enabled, the checklist must be complete to unlock the transition button.'
       ">
@@ -211,6 +228,7 @@ function enableDisable(val: boolean, text: string) {
         labelid="intermission_scene"
         v-model="settings.data.intermissionScene"
         :options="sceneList.data"
+        @update:model-value="settings.save()"
         class="w-full"></Select>
       <label for="intermission_scene">Intermission Scene</label>
     </FloatLabel>

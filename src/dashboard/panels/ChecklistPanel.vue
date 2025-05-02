@@ -44,6 +44,14 @@ function reset() {
       checklist.data.custom[key] = false;
     }
     checklist.data.completed = false;
+    checklist.save();
+  }
+}
+
+function override() {
+  if (checklist.data) {
+    checklist.data.completed = true;
+    checklist.save();
   }
 }
 </script>
@@ -52,7 +60,7 @@ function reset() {
     <Button
       id="override"
       severity="info"
-      @click="checklist.data.completed = true"
+      @click="override"
       class="w-full"
       label="Override">
     </Button>
