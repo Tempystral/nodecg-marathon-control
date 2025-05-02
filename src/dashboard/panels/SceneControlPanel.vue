@@ -162,7 +162,9 @@ watch(previewScene, (newVal, oldVal) => {
                 <Button
                   :player="i"
                   id="refresh"
-                  severity="danger"
+                  severity="success"
+                  rounded
+                  variant="text"
                   @click="refreshStream(i)">
                   <template #icon>
                     <svg-icon type="mdi" :path="mdiRefresh" />
@@ -171,7 +173,9 @@ watch(previewScene, (newVal, oldVal) => {
                 <Button
                   :player="i"
                   id="cam"
-                  :severity="activeRunners.data[i].cam ? 'help' : 'secondary'"
+                  rounded
+                  variant="text"
+                  :severity="activeRunners.data[i].cam ? 'info' : 'danger'"
                   @click="toggleCam(i)">
                   <template #icon>
                     <svg-icon
