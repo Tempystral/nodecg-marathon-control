@@ -4,106 +4,12 @@ import { mdiRecord, mdiSurroundSound } from "@mdi/js";
 import { ChecklistData, OBSStatus, SettingsReplicant } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { NAMESPACE } from "../utils";
 
 const settings = useReplicant<SettingsReplicant>("settings", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
 const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
-
-/* function load() {
-  // Open welcome dialog on first launch.
-  if (settings.value.firstLaunch) {
-    setTimeout(() => {
-      nodecg.getDialog("welcome").open();
-      settings.value.firstLaunch = false;
-    }, 2000);
-  } */
-
-// Update buttons, icons, and VBO.Ninja room codes.
-/* settings.on("change", (newVal) => {
-    switch (newVal.previewCode) {
-      case "":
-        document.getElementById("preview").src = ``;
-        break;
-      default:
-        document.getElementById("preview").src =
-          `https://vdo.ninja/?view=${newVal.previewCode}&autostart&cleanish&transparent&mute`;
-        break;
-    }
-    switch (newVal.programCode) {
-      case "":
-        document.getElementById("program").src = ``;
-        break;
-      default:
-        document.getElementById("program").src =
-          `https://vdo.ninja/?view=${newVal.programCode}&autostart&cleanish&transparent&mute`;
-        break;
-    }
-  }); */
-
-/* obsStatus.on("change", (newVal) => {
-    console.log(newVal);
-    const transition = document.getElementById("transition");
-    const emergency = document.getElementById("emergency");
-    switch (newVal.streaming) {
-      case true:
-        document.getElementById("streaming").style.color = "limegreen";
-        break;
-      case false:
-        document.getElementById("streaming").style.color = "white";
-        break;
-    }
-    switch (newVal.recording) {
-      case true:
-        document.getElementById("recording").style.color = "red";
-        break;
-      case false:
-        document.getElementById("recording").style.color = "white";
-        break;
-    }
-    switch (newVal.emergencyTransition) {
-      case true:
-        emergency.disabled = true;
-        break;
-      case false:
-        emergency.disabled = false;
-        break;
-    }
-    if (
-      !settings.value.forceChecklist ||
-      checklist.value.completed ||
-      !checklist.value.started
-    ) {
-      switch (newVal.inTransition) {
-        case true:
-          transition.disabled = true;
-          emergency.disabled = true;
-          break;
-        case false:
-          transition.disabled = false;
-          break;
-      }
-    }
-  }); */
-
-/* checklist.on("change", (newVal) => {
-    if (settings.value.forceChecklist && newVal.started) {
-      const transition = document.getElementById("transition");
-      switch (newVal.completed) {
-        case false:
-          transition.disabled = true;
-          transition.title =
-            "Please complete the checklist to unlock this button.";
-          break;
-        case true:
-          transition.disabled = false;
-          transition.title = "";
-          break;
-      }
-    }
-  });
-} */
 
 function transition() {
   nodecg.sendMessage("startTransition");
@@ -130,10 +36,12 @@ const recordIconStyle = computed(() =>
 <template>
   <div class="flex items-center justify-around w-full gap-2">
     <iframe
+      v-if="settings.data"
       id="preview"
       frameBorder="0"
       allow="autoplay"
-      class="h-60 aspect-video"></iframe>
+      class="h-60 aspect-video t-2"
+      :src="`https://vdo.ninja/?view=${settings.data.previewCode}&autostart&cleanish&transparent&mute`"></iframe>
     <div id="transitionDiv" class="flex flex-col items-center gap-2">
       <div id="streamStatus" class="flex gap-2">
         <SvgIcon
@@ -179,10 +87,12 @@ const recordIconStyle = computed(() =>
       </div>
     </div>
     <iframe
+      v-if="settings.data"
       id="program"
       frameBorder="0"
       allow="autoplay"
-      class="h-60 aspect-video"></iframe>
+      class="h-60 aspect-video"
+      :src="`https://vdo.ninja/?view=${settings.data.programCode}&autostart&cleanish&transparent&mute`"></iframe>
   </div>
 </template>
 <style></style>
