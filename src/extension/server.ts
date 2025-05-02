@@ -166,22 +166,23 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
   }
 });
 
-function onStatusChange(newVal?: OBSStatus, oldVal?: OBSStatus) {
+obsStatus.on("change", onStatusChange);
+
+async function onStatusChange(newVal?: OBSStatus, oldVal?: OBSStatus) {
   if (!oldVal || !newVal) {
     return;
   }
   if (newVal.emergencyTransition !== oldVal.emergencyTransition) {
-    emergencyTransition(newVal);
+    await emergencyTransition(newVal);
   }
   if (newVal.inIntermission !== oldVal.inIntermission) {
     updateChecklist(newVal);
   }
 }
 
-obsStatus.on("change", onStatusChange);
-
 // Emergency transition logic.
 async function emergencyTransition(data: OBSStatus) {
+  nodecg.log.debug(`Emergency transition! Status: ${data.emergencyTransition}`);
   if (!data.emergencyTransition) {
     await obs.send("TriggerStudioModeTransition");
     return;

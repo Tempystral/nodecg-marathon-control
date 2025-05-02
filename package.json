@@ -95,6 +95,12 @@
     ],
     "dashboardPanels": [
       {
+        "name": "videoMonitor",
+        "title": "Preview/Program",
+        "width": 9,
+        "file": "videoMonitor.html"
+      },
+      {
         "name": "stats",
         "title": "Stats",
         "width": 3,
