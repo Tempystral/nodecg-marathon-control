@@ -22,6 +22,8 @@
   "dependencies": {
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
+    "@jamescoyle/vue-icon": "^0.1.2",
+    "@mdi/js": "^7.4.47",
     "@primeuix/themes": "^1.0.3",
     "@tailwindcss/vite": "^4.1.4",
     "@types/ws": "^8.18.1",
@@ -110,6 +112,12 @@
         "title": "Checklist",
         "width": 3,
         "file": "checklist.html"
+      },
+      {
+        "name": "sceneControl",
+        "title": "Scene Control",
+        "width": 3,
+        "file": "sceneControl.html"
       }
     ]
   }

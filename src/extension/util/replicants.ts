@@ -2,6 +2,7 @@ import { RunDataActiveRun, Timer } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValue from "../defaultValues";
 import { get as nodecg } from "./nodecg";
 import {
+  ActiveRunners,
   AdPlayerData,
   AudioSource,
   ChecklistData,
@@ -18,12 +19,6 @@ import {
 // TODO put a type on all of these
 
 // Active runner data.
-interface ActiveRunners {
-  source: string | null;
-  streamKey: string | null;
-  server: string | null;
-  cam: boolean;
-}
 const activeRunners = nodecg().Replicant<ActiveRunners[]>("activeRunners", {
   defaultValue: defaultValue.activeRunners,
 });

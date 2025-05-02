@@ -98,3 +98,10 @@ export interface AdPlayerData {
   secondsLeft: number;
   videoScene: string | null;
 }
+
+export interface ActiveRunners {
+  source: string | null;
+  streamKey: string | null;
+  server: string | null;
+  cam: boolean;
+}
