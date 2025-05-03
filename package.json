@@ -101,6 +101,12 @@
         "file": "videoMonitor.html"
       },
       {
+        "name": "audio",
+        "title": "Audio",
+        "width": 3,
+        "file": "audioPanel.html"
+      },
+      {
         "name": "stats",
         "title": "Stats",
         "width": 3,
