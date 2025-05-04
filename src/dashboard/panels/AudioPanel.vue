@@ -1,78 +1,71 @@
 <script setup lang="ts">
+import SvgIcon from "@jamescoyle/vue-icon";
+import { mdiVolumeHigh, mdiVolumeOff } from "@mdi/js";
 import { ActiveRunners, AudioSource } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
-import { NAMESPACE } from "../utils";
-import { computed, onMounted, ref, unref, watch } from "vue";
-import Slider from "primevue/slider";
 import Button from "primevue/button";
-import InputText from "primevue/inputtext";
-import SvgIcon from "@jamescoyle/vue-icon";
-import InputNumber from "primevue/inputnumber";
-import { mdiVolumeHigh, mdiVolumeOff, mdiVolumePlus } from "@mdi/js";
 import FloatLabel from "primevue/floatlabel";
+import InputNumber from "primevue/inputnumber";
+import Slider from "primevue/slider";
+import { ref, watch } from "vue";
+import { NAMESPACE } from "../utils";
 
-// kludgy solution, I think a better way would be to just fix the type issue and control the value directly from v-model
-const activeRunners = nodecg.Replicant<ActiveRunners[]>(
-  "activeRunners",
-  NAMESPACE,
-);
-const audioSources = nodecg.Replicant<AudioSource[]>("audioSources", NAMESPACE);
+const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
+const audioSources = useReplicant<AudioSource[]>("audioSources", NAMESPACE);
 
-const playerAudioSources = ref<AudioSource[]>();
-
-NodeCG.waitForReplicants(activeRunners, audioSources).then(() => {
-  playerAudioSources.value = activeRunners.value
-    ?.map((r) => audioSources.value?.find((x) => x.name === r.source))
-    .filter((r) => r != undefined);
-});
-
-// const playerAudioSources = computed(() =>
-//   activeRunners.data
-//     ?.map((r) => audioSources.data?.find((x) => x.name === r.source))
-//     .filter((r) => r != undefined),
-// );
-
-const volume = ref([0, 0, 0, 0]);
+const playerAudioSources = ref<AudioSource[]>(); // Audio sources for the players specifically
+interface VolumeSlider {
+  value: number;
+  active: boolean;
+}
+const sliders = ref<VolumeSlider[]>([
+  { value: 0, active: false },
+  { value: 0, active: false },
+  { value: 0, active: false },
+  { value: 0, active: false },
+]); // Volume (in %) for each player source
 
 watch(
-  playerAudioSources,
-  (val) => {
-    val?.forEach((source, i) => {
-      volume.value[i] = parseFloat(dbToPercent(parseFloat(source.volume.db)));
+  () => audioSources.data,
+  (sources) => {
+    // Set player audio sources from the list of OBS audio sources
+    playerAudioSources.value = activeRunners.data
+      ?.map((r) => sources?.find((x) => x.name === r.source))
+      .filter((r) => r != undefined);
+    // For each player audio source, set its volume only if its slider is not being used
+    // This prevents double-assignment when we change the volume here
+    // and OBS reports the change a second later
+    playerAudioSources.value?.forEach((source, i) => {
+      const newVol = dbToPercent(source.volume.db);
+      const currVol = sliders.value[i].value;
+      if (!sliders.value[i].active && currVol != newVol) {
+        // Only update this if the handle isn't being grabbed
+        console.log(`Slider ${source.name} updated from OBS`);
+        sliders.value[i].value = newVol;
+      }
     });
   },
-  { once: true },
 );
 
-// function percentToMul(value) {
-// 	value = value / 100;
-// 	value = 20 * Math.log10(value);
-// 	value = Math.pow(10, -Math.abs(value / 10));
-// 	value = value.toFixed(2);
-// 	return parseFloat(value);
-// }
-
+// I hate how these are more accurate than the math functions but fine, they work
 function dbToPercent(value: number) {
-  return (Math.pow(10, value / 40) * 100).toFixed(0);
-}
-
-function dbToString(value: number) {
-  if (value < -99) return "-inf dB";
-  return value + " dB";
+  return parseFloat((Math.pow(10, value / 40) * 100).toFixed(0));
 }
 
 function percentToDb(value: number) {
-  return (40 * Math.log10(value) - 80).toFixed(1);
+  return parseFloat((40 * Math.log10(value) - 80).toFixed(1));
 }
 
 async function mute(source: AudioSource) {
   await nodecg.sendMessage("toggleMute", source.name);
 }
 
-async function setVolume(source: AudioSource, volume: number) {
+async function setVolume(source: AudioSource, slider: VolumeSlider) {
+  slider.active = true;
+  console.log(`Slider ${source.name} updated from NodeCG`);
   await nodecg.sendMessage("setVolume", {
     source: source.name,
-    volume: parseFloat(percentToDb(volume)),
+    volume: percentToDb(slider.value),
   });
 }
 
@@ -107,24 +100,25 @@ async function setOffset(source: AudioSource) {
           </Button>
           <div class="flex-grow-1 flex flex-col gap-2">
             <span class="-mt-1" :id="`player-${i}-volume-slider`">
-              {{ percentToDb(volume[i]) }} dB
+              {{ percentToDb(sliders[i].value) }} dB
             </span>
             <Slider
               :aria-labelledby="`player-${i}-volume-slider`"
               class="w-full"
               :min="0"
               :max="100"
-              v-model="volume[i]"
-              @change="setVolume(source, volume[i])">
+              v-model="sliders[i].value"
+              @change="setVolume(source, sliders[i])"
+              @slideend="sliders[i].active = false">
             </Slider>
           </div>
           <FloatLabel variant="over" class="w-12">
             <InputNumber
               type="number"
-              input-id="playerOffset"
+              :input-id="`player-${i}-offset`"
               v-model="source.offset"
               @change="setOffset(source)" />
-            <label for="playerOffset" class="-ms-1">Offset</label>
+            <label :for="`player-${i}-offset`" class="-ms-1">Offset</label>
           </FloatLabel>
         </div>
       </div>

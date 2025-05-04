@@ -48,8 +48,8 @@ export interface AudioSource {
   name: string;
   type: string;
   volume: {
-    mul: string;
-    db: string;
+    mul: number;
+    db: number;
   };
   muted: boolean;
   offset: number;

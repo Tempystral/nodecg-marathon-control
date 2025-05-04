@@ -62,8 +62,8 @@ obs.on("InputVolumeChanged", (data) => {
   const source = findAudioSource(data.inputName);
   if (source) {
     source.volume = {
-      mul: data.inputVolumeMul.toFixed(1),
-      db: data.inputVolumeDb.toFixed(1),
+      mul: data.inputVolumeMul, //.toFixed(1),
+      db: data.inputVolumeDb, //.toFixed(1),
     };
   }
 });
@@ -297,8 +297,8 @@ async function getAudioSources() {
       name: inputName,
       type: inputKind,
       volume: {
-        mul: volume.inputVolumeMul.toFixed(1),
-        db: volume.inputVolumeDb.toFixed(1),
+        mul: volume.inputVolumeMul, //.toFixed(1),
+        db: volume.inputVolumeDb, //.toFixed(1),
       },
       muted: mute.inputMuted,
       offset: offset.inputAudioSyncOffset,
