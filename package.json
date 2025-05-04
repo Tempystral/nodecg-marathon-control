@@ -113,13 +113,6 @@
         "file": "stats.html"
       },
       {
-        "name": "obsSettings",
-        "title": "General",
-        "width": 3,
-        "file": "obsSettings.html",
-        "workspace": "Settings"
-      },
-      {
         "name": "checklist",
         "title": "Checklist",
         "width": 3,
@@ -130,6 +123,20 @@
         "title": "Scene Control",
         "width": 3,
         "file": "sceneControl.html"
+      },
+      {
+        "name": "obsSettings",
+        "title": "General",
+        "width": 3,
+        "file": "obsSettings.html",
+        "workspace": "Settings"
+      },
+      {
+        "name": "autoRecordSettings",
+        "title": "Auto Record",
+        "width": 3,
+        "file": "autoRecordSettings.html",
+        "workspace": "Settings"
       }
     ]
   }

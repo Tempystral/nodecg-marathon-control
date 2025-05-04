@@ -1,0 +1,225 @@
+<script setup lang="ts">
+const settings = nodecg.Replicant("settings");
+const autoRecord = nodecg.Replicant("autoRecord");
+
+window.onload = () => {
+  NodeCG.waitForReplicants(settings, autoRecord).then(() => {
+    settings.on("change", (newVal) => {
+      const autoRecord = document.getElementById("autoRecord");
+      switch (newVal.autoRecord) {
+        case true:
+          autoRecord.value = "Turn Off Auto Record";
+          autoRecord.backgroundColor = "#990000";
+          document.getElementById("filenameFormatting").disabled = false;
+          break;
+        case false:
+          autoRecord.value = "Turn On Auto Record";
+          autoRecord.backgroundColor = "#272727";
+          document.getElementById("filenameFormatting").disabled = true;
+          break;
+      }
+    });
+
+    autoRecord.on(
+      "change",
+      (newVal) =>
+        (document.getElementById("filenameFormatting").value =
+          newVal.filenameFormatting),
+    );
+  });
+};
+
+function toggleTable() {
+  switch (
+    window
+      .getComputedStyle(document.getElementById("variableTable"))
+      .getPropertyValue("display")
+  ) {
+    case "none":
+      document.getElementById("variableTable").style.display = "table";
+      document.getElementById("toggleTable").value = "Hide Variables";
+      break;
+    case "table":
+      document.getElementById("variableTable").style.display = "none";
+      document.getElementById("toggleTable").value = "Show Variables";
+      break;
+  }
+}
+</script>
+<template>
+  <nodecg-button
+    id="autoRecord"
+    onClick="settings.value.autoRecord = !settings.value.autoRecord"></nodecg-button>
+  <nodecg-input
+    type="text"
+    id="filenameFormatting"
+    label="Filename Formatting"
+    onChange="autoRecord.value.filenameFormatting = this.value"></nodecg-input>
+  <nodecg-button id="toggleTable" onClick="toggleTable()"
+    >Show Variables</nodecg-button
+  >
+  <table id="variableTable">
+    <tbody>
+      <tr>
+        <td>%GAME</td>
+        <td>Game name</td>
+      </tr>
+      <tr>
+        <td>%CAT</td>
+        <td>Category</td>
+      </tr>
+      <tr>
+        <td>%RGN</td>
+        <td>Region</td>
+      </tr>
+      <tr>
+        <td>%REL</td>
+        <td>Release</td>
+      </tr>
+      <tr>
+        <td>%TWIT</td>
+        <td>Game, Twitch</td>
+      </tr>
+      <tr>
+        <td>%SYS</td>
+        <td>System</td>
+      </tr>
+      <tr>
+        <td>%EST</td>
+        <td>Estimate</td>
+      </tr>
+      <tr>
+        <td>%SET</td>
+        <td>Setup Time</td>
+      </tr>
+      <tr>
+        <td>%RNR</td>
+        <td>Runner</td>
+      </tr>
+      <tr>
+        <td>%CCYY</td>
+        <td>Year, four digits</td>
+      </tr>
+      <tr>
+        <td>%YY</td>
+        <td>Year, last two digits (00-99)</td>
+      </tr>
+      <tr>
+        <td>%MM</td>
+        <td>Month as a decimal number (01-12)</td>
+      </tr>
+      <tr>
+        <td>%DD</td>
+        <td>Day of the month, zero-padded (01-31)</td>
+      </tr>
+      <tr>
+        <td>%hh</td>
+        <td>Hour in 24h format (00-23)</td>
+      </tr>
+      <tr>
+        <td>%mm</td>
+        <td>Minute (00-59)</td>
+      </tr>
+      <tr>
+        <td>%ss</td>
+        <td>Second (00-61)</td>
+      </tr>
+      <tr>
+        <td>%%</td>
+        <td>A % sign</td>
+      </tr>
+      <tr>
+        <td>%a</td>
+        <td>Abbreviated weekday name</td>
+      </tr>
+      <tr>
+        <td>%A</td>
+        <td>Full weekday name</td>
+      </tr>
+      <tr>
+        <td>%b</td>
+        <td>Abbreviated month name</td>
+      </tr>
+      <tr>
+        <td>%B</td>
+        <td>Full month name</td>
+      </tr>
+      <tr>
+        <td>%d</td>
+        <td>Day of the month, zero-padded (01-31)</td>
+      </tr>
+      <tr>
+        <td>%H</td>
+        <td>Hour in 24h format (00-23)</td>
+      </tr>
+      <tr>
+        <td>%l</td>
+        <td>Hour in 12h format (01-12)</td>
+      </tr>
+      <tr>
+        <td>%m</td>
+        <td>Month as a decimal number (01-12)</td>
+      </tr>
+      <tr>
+        <td>%M</td>
+        <td>Minute (00-59)</td>
+      </tr>
+      <tr>
+        <td>%p</td>
+        <td>AM or PM designation</td>
+      </tr>
+      <tr>
+        <td>%S</td>
+        <td>Second (00-61)</td>
+      </tr>
+      <tr>
+        <td>%y</td>
+        <td>Year, last two digits (00-99)</td>
+      </tr>
+      <tr>
+        <td>%Y</td>
+        <td>Year</td>
+      </tr>
+      <tr>
+        <td>%z</td>
+        <td>ISO 8601 offset from UTC in timezone</td>
+      </tr>
+      <tr>
+        <td>%Z</td>
+        <td>Timezone name or abbreviation</td>
+      </tr>
+      <tr>
+        <td>%FPS</td>
+        <td>Frames per second</td>
+      </tr>
+      <tr>
+        <td>%CRES</td>
+        <td>Base (canvas) resolution</td>
+      </tr>
+      <tr>
+        <td>%ORES</td>
+        <td>Output (scaled) resolution</td>
+      </tr>
+      <tr>
+        <td>%VF</td>
+        <td>Video format</td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+
+<style>
+nodecg-input {
+  margin-top: 17px;
+  margin-bottom: 12px;
+}
+
+#variableTable {
+  display: none;
+  margin-top: 15px;
+}
+
+td:first-child {
+  width: 25%;
+}
+</style>
