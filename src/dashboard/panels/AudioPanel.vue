@@ -2,106 +2,47 @@
 import { ActiveRunners, AudioSource } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import { NAMESPACE } from "../utils";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, unref, watch } from "vue";
 import Slider from "primevue/slider";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import SvgIcon from "@jamescoyle/vue-icon";
+import InputNumber from "primevue/inputnumber";
+import { mdiVolumeHigh, mdiVolumeOff, mdiVolumePlus } from "@mdi/js";
+import FloatLabel from "primevue/floatlabel";
 
-const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
-const audioSources = useReplicant<AudioSource[]>("audioSources", NAMESPACE);
+// kludgy solution, I think a better way would be to just fix the type issue and control the value directly from v-model
+const activeRunners = nodecg.Replicant<ActiveRunners[]>(
+  "activeRunners",
+  NAMESPACE,
+);
+const audioSources = nodecg.Replicant<AudioSource[]>("audioSources", NAMESPACE);
 
-/* window.onload = () => {
-  NodeCG.waitForReplicants(audioSources, activeRunners).then(() => {
-    audioSources.on("change", (newVal, oldVal) => {
-      if (!oldVal || newVal.length !== oldVal.length)
-        return createAudioSources(newVal);
-      const changedSources = [];
-      newVal.forEach((source, index) => {
-        if (JSON.stringify(source) !== JSON.stringify(oldVal[index]))
-          changedSources.push(source);
-      });
-      for (const source of changedSources) {
-        document.querySelector(
-          `.volumeLabel[source="${source.name}"]`,
-        ).innerHTML = dbToString(source.volume.db);
-        document.querySelector(
-          `.muteButton[source="${source.name}"]`,
-        ).buttonText =
-          `<span class="material-icons mute" source="${source.name}" style="color: ${source.muted ? "red" : "white"};">${source.muted ? "volume_off" : "volume_up"}</span>`;
-        document.querySelector(`.slider[source="${source.name}"]`).value =
-          dbToPercent(source.volume.db);
-        document.querySelector(`.offset[source="${source.name}"]`).value =
-          source.offset;
-      }
+const playerAudioSources = ref<AudioSource[]>();
+
+NodeCG.waitForReplicants(activeRunners, audioSources).then(() => {
+  playerAudioSources.value = activeRunners.value
+    ?.map((r) => audioSources.value?.find((x) => x.name === r.source))
+    .filter((r) => r != undefined);
+});
+
+// const playerAudioSources = computed(() =>
+//   activeRunners.data
+//     ?.map((r) => audioSources.data?.find((x) => x.name === r.source))
+//     .filter((r) => r != undefined),
+// );
+
+const volume = ref([0, 0, 0, 0]);
+
+watch(
+  playerAudioSources,
+  (val) => {
+    val?.forEach((source, i) => {
+      volume.value[i] = parseFloat(dbToPercent(parseFloat(source.volume.db)));
     });
-  });
-}; */
-
-/* function createAudioSources(newVal) {
-  const newArray = [];
-  newVal.forEach((element) => newArray.push(element));
-  const audioSources = newArray.sort((a, b) =>
-    a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
-  );
-  document.getElementById("sourceSliders").innerHTML = "";
-  for (const playerSource of activeRunners.value) {
-    const source = audioSources.find((x) => x.name === playerSource.source);
-    if (source) createSlider(source);
-  }
-  for (const source of audioSources) {
-    if (
-      document.querySelector(`.volumeLabel[source="${source.name}"]`) === null
-    )
-      createSlider(source);
-  }
-} */
-
-const playerAudioSources = computed(() =>
-  activeRunners.data
-    ?.map((r) => audioSources.data?.find((x) => x.name === r.source))
-    .filter((r) => r != undefined),
-); //ref<AudioSource[]>([]);
-//watch(() => activeRunners.data, updateAudioSources);
-
-/* const sources = 
-
-function updateAudioSources(runners?: ActiveRunners[]) {
-  playerAudioSources.value = [];
-  if (runners && audioSources.data) {
-    for (const player of runners) {
-      const source = audioSources.data.find((x) => x.name === player.source);
-      if (source) {
-        playerAudioSources.value.push(source);
-      }
-    }
-  }
-}
-
-onMounted(() => {
-  updateAudioSources(activeRunners.data);
-}); */
-
-/* function createSlider(source: AudioSource) {
-  const slider = `
-	<div class="sliderContainer">
-		<span class="label">${source.name}</span>
-		<span class="volumeLabel" source="${source.name}">${dbToString(source.volume.db)}</span>
-		<div class="sliderDiv">
-			<Button class="muteButton" source="${source.name}" onclick="nodecg.sendMessage('toggleMute', '${source.name}')">
-				<span class="material-icons mute" source="${source.name}" style="color: ${source.muted ? "red" : "white"};">${source.muted ? "volume_off" : "volume_up"}</span>
-			</Button>
-			<Slider class="slider" source="${source.name}" min="0" max="100" value="${dbToPercent(source.volume.db)}" onInput="setLabel('${source.name}', this.value)" onChange="nodecg.sendMessage('setVolume', { source: '${source.name}', volume: parseFloat(percentToDb(this.value)) })"></Slider>
-			<InputText type="number" class="offset" label="Offset" source="${source.name}" value="${source.offset}" onChange="nodecg.sendMessage('setOffset', { source: '${source.name}', offset: parseInt(this.value) })"></InputText>
-		</div>
-	</div>`;
-  document.getElementById("sourceSliders").innerHTML += slider;
-}
-
-function setLabel(source, value) {
-  document.querySelector(`.volumeLabel[source="${source}"]`).innerHTML =
-    dbToString(percentToDb(value));
-} */
+  },
+  { once: true },
+);
 
 // function percentToMul(value) {
 // 	value = value / 100;
@@ -135,7 +76,12 @@ async function setVolume(source: AudioSource, volume: number) {
   });
 }
 
-const volume = ref(0);
+async function setOffset(source: AudioSource) {
+  await nodecg.sendMessage("setOffset", {
+    source: source.name,
+    offset: source.offset,
+  });
+}
 </script>
 <template>
   <div id="sourceSliders">
@@ -143,35 +89,52 @@ const volume = ref(0);
       class="sliderContainer"
       v-for="(source, i) of playerAudioSources"
       :key="`player-${i}-slider`">
-      <span class="label">{{ source.name }}</span>
-      <span class="volumeLabel">
-        {{ dbToString(volume) }}
-      </span>
-      <div class="sliderDiv">
-        <Button class="muteButton" @click="mute(source)">
-          <SvgIcon
-            type="mdi"
-            :path="source.muted ? 'volume_off' : 'volume_up'"
-            :class="source.muted ? 'text-red-500' : 'text-white'" />
-        </Button>
-        <Slider
-          class="slider"
-          :min="0"
-          :max="100"
-          v-model="volume"
-          value="${dbToPercent(source.volume.db)}"
-          onInput="setLabel('${source.name}', this.value)"
-          @change="setVolume(source, volume)"></Slider>
-        <InputText
-          type="number"
-          class="offset"
-          label="Offset"
-          source="${source.name}"
-          value="${source.offset}"
-          onChange="nodecg.sendMessage('setOffset', { source: '${source.name}', offset: parseInt(this.value) })"></InputText>
+      <div class="mb-2">
+        <span class="mb-2">
+          {{ source.name }}
+        </span>
+
+        <div class="sliderDiv flex gap-4">
+          <Button
+            class="muteButton"
+            severity="secondary"
+            size="small"
+            @click="mute(source)">
+            <SvgIcon
+              type="mdi"
+              :path="source.muted ? mdiVolumeOff : mdiVolumeHigh"
+              :class="source.muted ? 'text-red-500' : 'text-white'" />
+          </Button>
+          <div class="flex-grow-1 flex flex-col gap-2">
+            <span class="-mt-1" :id="`player-${i}-volume-slider`">
+              {{ percentToDb(volume[i]) }} dB
+            </span>
+            <Slider
+              :aria-labelledby="`player-${i}-volume-slider`"
+              class="w-full"
+              :min="0"
+              :max="100"
+              v-model="volume[i]"
+              @change="setVolume(source, volume[i])">
+            </Slider>
+          </div>
+          <FloatLabel variant="over" class="w-12">
+            <InputNumber
+              type="number"
+              input-id="playerOffset"
+              v-model="source.offset"
+              @change="setOffset(source)" />
+            <label for="playerOffset" class="-ms-1">Offset</label>
+          </FloatLabel>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<style></style>
+<style>
+/* Fix your library please */
+.p-inputnumber input {
+  width: 100%;
+}
+</style>
