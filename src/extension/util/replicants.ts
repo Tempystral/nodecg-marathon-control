@@ -1,15 +1,16 @@
-import { RunDataActiveRun, Timer } from "speedcontrol-util/types/speedcontrol";
-import * as defaultValue from "../defaultValues";
-import { get as nodecg } from "./nodecg";
 import {
   ActiveRunners,
   AdPlayerData,
   AudioSource,
+  AutoRecordSettings,
   ChecklistData,
   OBSStats,
   OBSStatus,
   StreamSyncData,
 } from "@nmc/types";
+import { RunDataActiveRun, Timer } from "speedcontrol-util/types/speedcontrol";
+import * as defaultValue from "../defaultValues";
+import { get as nodecg } from "./nodecg";
 
 /**
  * This is where you can declare all your replicant to import easily into other files,
@@ -50,7 +51,7 @@ const streamSync = nodecg().Replicant<StreamSyncData>("streamSync", {
   defaultValue: defaultValue.streamSync,
 });
 // Auto Record settings
-const autoRecord = nodecg().Replicant("autoRecord", {
+const autoRecord = nodecg().Replicant<AutoRecordSettings>("autoRecord", {
   defaultValue: defaultValue.autoRecord,
 });
 // Bot data.
@@ -77,25 +78,25 @@ const checklist = nodecg().Replicant<ChecklistData>("checklist", {
 // Active run data from nodecg()-speedcontrol.
 const runDataActiveRun = nodecg().Replicant<RunDataActiveRun>(
   "runDataActiveRun",
-  "nodecg()-speedcontrol",
+  "nodecg-speedcontrol",
 );
 // Timer from nodecg()-speedcontrol.
-const timer = nodecg().Replicant<Timer>("timer", "nodecg()-speedcontrol");
+const timer = nodecg().Replicant<Timer>("timer", "nodecg-speedcontrol");
 
 export {
-  timer,
-  runDataActiveRun,
-  checklist,
+  activeRunners,
   adPlayer,
+  audioSources,
+  autoRecord,
+  botData,
   botSettings,
   botSpeaking,
-  botData,
-  autoRecord,
-  streamSync,
+  checklist,
   obsStatus,
-  settings,
-  activeRunners,
+  runDataActiveRun,
   sceneList,
-  audioSources,
+  settings,
   stats,
+  streamSync,
+  timer,
 };

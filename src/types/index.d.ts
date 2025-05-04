@@ -44,6 +44,11 @@ export interface SettingsReplicant {
   firstLaunch: boolean;
 }
 
+export interface AutoRecordSettings {
+  active: boolean;
+  filenameFormatting: string;
+}
+
 export interface AudioSource {
   name: string;
   type: string;

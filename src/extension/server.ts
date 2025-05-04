@@ -1,6 +1,6 @@
 import path from "path";
 
-import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
+import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 import { get } from "./util/nodecg";
 import * as obs from "./obs";
 import {
@@ -125,6 +125,7 @@ function updateStreamKeys(teams: RunDataTeam[]) {
 }
 
 runDataActiveRun.on("change", (newVal, oldVal) => {
+  nodecg.log.debug("onChange - runDataActiveRun");
   if (!newVal) {
     resetStreamKeys();
     return;
@@ -161,7 +162,7 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
           sceneName: newVal.customData.layout,
         });
       } catch {}
-    setFilenameFormatting(autoRecord.value.filenameFormatting);
+    setFilenameFormatting(autoRecord.value.filenameFormatting, newVal);
     streamSync.value.delay = [null, null, null, null];
   }
 });
@@ -249,35 +250,33 @@ function createCustomChecklist() {
 }
 
 // Set filename formatting.
-async function setFilenameFormatting(filename: string) {
-  if (runDataActiveRun.value) {
-    const data = runDataActiveRun.value;
-    filename = filename.replace(/%GAME/g, data.game ?? "");
-    filename = filename.replace(/%CAT/g, data.category ?? "");
-    filename = filename.replace(/%RGN/g, data.region ?? "");
-    filename = filename.replace(/%REL/g, data.release ?? "");
-    filename = filename.replace(/%TWIT/g, data.gameTwitch ?? "");
-    filename = filename.replace(/%SYS/g, data.system ?? "");
-    filename = filename.replace(/%SYS/g, data.estimate ?? "");
-    filename = filename.replace(/%SET/g, data.setupTime ?? "");
+function setFilenameFormatting(filename: string, data: RunData) {
+  filename = filename.replace(/%GAME/g, data.game ?? "");
+  filename = filename.replace(/%CAT/g, data.category ?? "");
+  filename = filename.replace(/%RGN/g, data.region ?? "");
+  filename = filename.replace(/%REL/g, data.release ?? "");
+  filename = filename.replace(/%TWIT/g, data.gameTwitch ?? "");
+  filename = filename.replace(/%SYS/g, data.system ?? "");
+  filename = filename.replace(/%SYS/g, data.estimate ?? "");
+  filename = filename.replace(/%SET/g, data.setupTime ?? "");
 
-    if (filename.includes("%RNR")) {
-      let playerString = "";
-      data.teams.forEach((team) => {
-        team.players.forEach((player) => {
-          if (playerString === "") {
-            playerString = player.name;
-          } else {
-            playerString = playerString.concat(", ", player.name);
-          }
-        });
+  if (filename.includes("%RNR")) {
+    let playerString = "";
+    data.teams.forEach((team) => {
+      team.players.forEach((player) => {
+        if (playerString === "") {
+          playerString = player.name;
+        } else {
+          playerString = playerString.concat(", ", player.name);
+        }
       });
-      filename = filename.replace(/%RNR/g, playerString);
-    }
+    });
+    filename = filename.replace(/%RNR/g, playerString);
   }
-  filename = filename.replaceAll(/%/, "%%");
-  filename = filename.replaceAll(/[<>:\"\/\\|?*]/, "");
-  await obs.send("SetProfileParameter", {
+  filename = filename.replaceAll(/%/g, "%%");
+  filename = filename.replaceAll(/[<>:\"\/\\|?*]/g, "");
+  nodecg.log.debug(`Filename format: ${filename}`);
+  obs.send("SetProfileParameter", {
     parameterCategory: "Output",
     parameterName: "FilenameFormatting",
     parameterValue: filename,
