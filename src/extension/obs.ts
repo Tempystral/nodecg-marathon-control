@@ -18,9 +18,10 @@ import { AudioSource } from "@nmc/types";
 import * as defaultValue from "./defaultValues";
 import { setIntervalAsync } from "set-interval-async";
 
-const playerPage = "/bundles/nodecg-marathon-control/graphics/streamPlayer";
+const streamHost = "https://lt2025.restream.space";
 const nodecg = get();
 const config = nodecg.bundleConfig.websocket;
+const { viewerToken } = nodecg.bundleConfig.rtmp;
 
 nodecg.log.info(
   `Connecting to OBS instance at ws://${config.ip}:${config.port}...`,
@@ -86,11 +87,12 @@ function findAudioSource(name: string) {
 
 // Output events.
 obs.on("StreamStateChanged", setStreaming);
-obs.on("RecordStateChanged", setRecording);
 
 function setStreaming(data: OBSEventTypes["StreamStateChanged"]) {
   obsStatus.value.streaming = data.outputActive;
 }
+
+obs.on("RecordStateChanged", setRecording);
 
 function setRecording(data: OBSEventTypes["RecordStateChanged"]) {
   obsStatus.value.recording = data.outputActive;
@@ -98,6 +100,19 @@ function setRecording(data: OBSEventTypes["RecordStateChanged"]) {
 
 // Transition events.
 obs.on("SceneTransitionStarted", transition);
+
+// After setting up event hooks, connect
+obs
+  .connect(`ws://${config.ip}:${config.port}`, config.password, {
+    eventSubscriptions: EventSubscription.All,
+  })
+  .catch((e) => {
+    nodecg.log.error(
+      `Could not connect to OBS instance at ws://${config.ip}:${config.port}.`,
+    );
+    nodecg.log.error(e);
+    process.exit(1);
+  });
 
 export async function send<Type extends keyof OBSRequestTypes>(
   request: Type,
@@ -232,20 +247,6 @@ async function getStats() {
   };
 }
 
-obs
-  .connect(`ws://${config.ip}:${config.port}`, config.password, {
-    eventSubscriptions: EventSubscription.All,
-  })
-  .catch((e) => {
-    nodecg.log.error(
-      `Could not connect to OBS instance at ws://${config.ip}:${config.port}.`,
-    );
-    nodecg.log.error(e);
-    process.exit(1);
-  });
-
-// TODO export these methods from the server module
-
 async function getScenes() {
   const scenes = await send("GetSceneList");
   const sceneArray = [];
@@ -257,16 +258,20 @@ async function getScenes() {
   sceneList.value = sceneArray;
 }
 
-async function getAudioSources() {
-  const inputs = await send("GetInputList");
-  const inputList = inputs.inputs.filter((input) => {
-    return (
+async function getBrowserSources() {
+  const { inputs } = await send("GetInputList");
+  return inputs.filter(
+    (input) =>
       input.inputKind &&
-      defaultValue.audioSourceTypes.includes(input.inputKind.toString())
-    );
-  });
+      defaultValue.audioSourceTypes.includes(input.inputKind.toString()) &&
+      input.inputKind.toString() === "browser_source",
+  );
+}
+
+async function getAudioSources() {
   const audioSourceList: AudioSource[] = [];
-  for (const input of inputList) {
+  const browserSources = await getBrowserSources();
+  for (const input of browserSources) {
     if (
       input.inputName === null ||
       input.inputKind === null ||
@@ -277,18 +282,16 @@ async function getAudioSources() {
     const inputName = input.inputName.toString();
     const inputKind = input.inputKind.toString();
 
-    if (inputKind === "browser_source") {
-      const sourceSettings = await send("GetInputSettings", {
-        inputName: inputName,
-      });
-      if (!sourceSettings.inputSettings.reroute_audio) {
-        continue;
-      } else if (
-        typeof sourceSettings.inputSettings.url === "string" &&
-        sourceSettings.inputSettings.url.includes(playerPage)
-      ) {
-        setPlayerSource(inputName, sourceSettings);
-      }
+    const sourceSettings = await send("GetInputSettings", {
+      inputName: inputName,
+    });
+    if (!sourceSettings.inputSettings.reroute_audio) {
+      continue;
+    } else if (
+      typeof sourceSettings.inputSettings.url === "string" &&
+      sourceSettings.inputSettings.url.includes(streamHost)
+    ) {
+      setPlayerAudioSource(inputName);
     }
     const volume = await send("GetInputVolume", { inputName });
     const mute = await send("GetInputMute", { inputName });
@@ -308,28 +311,35 @@ async function getAudioSources() {
   audioSources.value = audioSourceList;
 }
 
-async function setPlayerSource(
-  input: string,
-  sourceSettings: OBSResponseTypes["GetInputSettings"],
-) {
-  if (
-    sourceSettings.inputSettings.url &&
-    typeof sourceSettings.inputSettings.url === "string"
-  ) {
-    switch (true) {
-      case sourceSettings.inputSettings.url.includes(`${playerPage}/1.html`):
-        activeRunners.value[0].source = input;
-        break;
-      case sourceSettings.inputSettings.url.includes(`${playerPage}/2.html`):
-        activeRunners.value[1].source = input;
-        break;
-      case sourceSettings.inputSettings.url.includes(`${playerPage}/3.html`):
-        activeRunners.value[2].source = input;
-        break;
-      case sourceSettings.inputSettings.url.includes(`${playerPage}/4.html`):
-        activeRunners.value[3].source = input;
-        break;
-    }
+async function setPlayerAudioSource(sourceName: string) {
+  switch (true) {
+    case sourceName.includes(`Player 1`):
+      activeRunners.value[0].source = sourceName;
+      break;
+    case sourceName.includes(`Player 2`):
+      activeRunners.value[1].source = sourceName;
+      break;
+    case sourceName.includes(`Player 3`):
+      activeRunners.value[2].source = sourceName;
+      break;
+    case sourceName.includes(`Player 4`):
+      activeRunners.value[3].source = sourceName;
+      break;
+  }
+}
+
+export async function setPlayerURL(index: number, streamkey: string) {
+  const browserSources = await getBrowserSources();
+  const playerSource = browserSources.find(
+    (s) => s.inputName === `Player ${index + 1}`,
+  );
+  if (playerSource?.inputName) {
+    await send("SetInputSettings", {
+      inputName: `Player ${index + 1}`,
+      inputSettings: {
+        url: `${streamHost}/live/key/${streamkey}?token=${viewerToken}&region=use`,
+      },
+    });
   }
 }
 

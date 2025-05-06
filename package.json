@@ -20,22 +20,17 @@
     "watch:extension": "tsc -b tsconfig.extension.json -w"
   },
   "dependencies": {
-    "@discordjs/opus": "^0.10.0",
-    "@discordjs/voice": "^0.18.0",
     "@jamescoyle/vue-icon": "^0.1.2",
     "@mdi/js": "^7.4.47",
     "@primeuix/themes": "^1.0.3",
     "@tailwindcss/vite": "^4.1.4",
     "@types/ws": "^8.18.1",
     "@vueuse/head": "^2.0.0",
-    "audio-mixer": "^2.1.4",
-    "discord.js": "^14.18.0",
     "node-fetch": "3.3.2",
     "nodecg": "^2.5.3",
     "nodecg-vue-composable": "~/git/nodecg-vue-composable",
     "obs-websocket-js": "^5.0.6",
     "primevue": "^4.3.3",
-    "prism-media": "^1.3.5",
     "set-interval-async": "^3.0.3",
     "speedcontrol-util": "^0.6.1",
     "tailwindcss": "^4.1.4",
@@ -57,13 +52,19 @@
     "module-alias": "^2.2.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
-    "sass-embedded": "^1.87.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite-plugin-checker": "^0.9.1",
     "vite-plugin-nodecg": "^2.1.0",
     "vue-eslint-parser": "^10.1.3",
     "vue-tsc": "^2.2.10"
+  },
+  "optionalDependencies": {
+    "@discordjs/opus": "^0.10.0",
+    "@discordjs/voice": "^0.18.0",
+    "audio-mixer": "^2.1.4",
+    "discord.js": "^14.18.0",
+    "prism-media": "^1.3.5"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

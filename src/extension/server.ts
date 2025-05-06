@@ -20,14 +20,14 @@ import { useWebsocketServer } from "./websocketServer";
 import { ChecklistData, OBSStatus } from "@nmc/types";
 
 const nodecg = get();
-const config = nodecg.bundleConfig.websocket;
+const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
 
 const { wsPath, upgradeServer } = useWebsocketServer();
 
 let isUpgraded = false;
 // const delayArray = {};
 
-if (!config.ip || config.ip === "" || !config.port || config.port === "") {
+if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
   nodecg.log.error(
     `OBS Websocket address has not been defined!
       Please add the IP address and port in the config.`,
@@ -115,8 +115,10 @@ function updateStreamKeys(teams: RunDataTeam[]) {
   try {
     resetStreamKeys();
     teams.forEach((team) => {
-      team.players.forEach((player, i) => {
-        activeRunners.value[i].streamKey = player.social.twitch ?? "";
+      team.players.forEach(async (player, i) => {
+        const streamKey = player.social.twitch ?? player.name;
+        activeRunners.value[i].streamKey = streamKey;
+        await obs.setPlayerURL(i, streamKey);
       });
     });
   } catch (e) {
@@ -130,26 +132,9 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
     resetStreamKeys();
     return;
   }
-  if ((!oldVal && newVal) || newVal.id !== oldVal?.id) {
+  if (newVal.id !== oldVal?.id) {
     if (checklist.value.started) checklist.value.default.playRun = true;
     if (settings.value.autoSetRunners) {
-      try {
-        for (let j = 0; j < 4; j++) {
-          activeRunners.value[j].streamKey = null;
-        }
-        let i = 0;
-        newVal.teams.forEach((team) => {
-          team.players.forEach((player) => {
-            // Prefer twitch name, but if it's unset fall back to username (which cannot be null)
-            activeRunners.value[i].streamKey =
-              player.social.twitch || player.name;
-            i++;
-          });
-        });
-        for (let j = i; j < 4; j++) {
-          activeRunners.value[i].streamKey = null;
-        }
-      } catch {}
       updateStreamKeys(newVal.teams);
     }
     if (

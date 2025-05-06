@@ -4,6 +4,10 @@ export interface ServerConfig {
     port: string;
     password: string;
   };
+  rtmp: {
+    streamToken: string;
+    viewerToken: string;
+  };
   RTMPServers: Record<string, any>;
   botToken: string;
   checklist: Record<string, any>;

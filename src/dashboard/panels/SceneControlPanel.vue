@@ -17,81 +17,27 @@ import { mdiVideoOff, mdiVideo, mdiRefresh } from "@mdi/js";
 import { ref, watch } from "vue";
 import { NAMESPACE } from "../utils";
 
-const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
+//const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
+//const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);
+//const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
-const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);
-const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
 
-/* window.onload = () => {
+const previewScene = ref(sceneList.data?.[0] ?? "");
 
-            // Load replicants.
-            NodeCG.waitForReplicants(obsStatus, activeRunners, sceneList, adPlayer, checklist).then(() => {
-
-                // Populate streamkey dropdown.
-                let serverOptions = '';
-                for (const server of Object.keys(nodecg.bundleConfig.RTMPServers)) {
-                    serverOptions += `<option>${server}</option>`
-                }
-                const serverDropdowns = document.querySelectorAll(`#runnerInfo Select`);
-                for (const select of serverDropdowns) {
-                    select.options = serverOptions;
-                }
-
-                // Populates dropdown with uploaded layouts.
-                sceneList.on('change', (newVal) => {
-                    let options = '';
-                    for (const scene of newVal) {
-                        options += `<option ${(obsStatus.value.previewScene === scene) ? 'selected' : ''}>${scene}</option>`
-                    }
-                    document.querySelector('Select').options = options;
-                });
-
-                // Update active runners and quality.
-                activeRunners.on('change', (newVal) => {
-                    for (let i = 0; i < 4; i++) {
-                        document.querySelector(`InputText[player="${i}"]`).value = newVal[i].streamKey;
-                        document.querySelector(`Select[player="${i}"]`).value = newVal[i].server;
-                        const cam = document.querySelector(`#cam[player="${i}"]`)
-                        switch (newVal[i].cam) {
-                            case true: cam.buttonText = `<span class="material-icons">videocam</span>`; cam.foregroundColor = 'white'; break;
-                            case false: cam.buttonText = `<span class="material-icons">videocam_off</span>`; cam.foregroundColor = 'red'; break;
-                        }
-                    }
-                });
-
-                adPlayer.on('change', (newVal) => {
-                    const adPlayer = document.getElementById('adPlayer')
-                    if (!newVal.videoAds && !newVal.twitchAds) adPlayer.style.display = 'none';
-                    else adPlayer.style.display = 'inherit'
-                    switch (newVal.adPlaying) {
-                        case true: adPlayer.disabled = true; adPlayer.buttonText = `Ads Playing (${newVal.secondsLeft}s Remaining)`; break;
-                        case false: adPlayer.disabled = false; adPlayer.buttonText = 'Play Ads'; break;
-                    }
-                })
-
-                obsStatus.on('change', (newVal, oldVal) => { if (!oldVal || newVal.previewScene !== oldVal.previewScene) document.getElementById("sceneList").value = newVal.previewScene; });
-            })
-        } */
-
-function setStreamKey(player: number, value: string) {
-  if (activeRunners.data) {
-    if (value === "") {
-      activeRunners.data[player].streamKey = null;
-    } else {
-      activeRunners.data[player].streamKey = value;
-    }
+watch(previewScene, (newVal, oldVal) => {
+  if (newVal != oldVal) {
+    nodecg.sendMessage("setPreviewScene", newVal);
   }
-}
-function setServer(player: number, value: string) {
-  if (activeRunners.data) {
-    if (value === "") {
-      activeRunners.data[player].server = null;
-    } else {
-      activeRunners.data[player].server = value;
-    }
-  }
-}
+});
+
+const servers = [
+  { name: "US West", value: "usw" },
+  { name: "US East", value: "use" },
+  { name: "Europe", value: "eu" },
+  { name: "South America", value: "sa" },
+  { name: "Asia/Pacific", value: "ap" },
+];
 
 function refreshStream(i: number) {
   if (activeRunners.data) {
@@ -103,18 +49,6 @@ function toggleCam(i: number) {
   if (activeRunners.data)
     activeRunners.data[i].cam = !activeRunners.data[i].cam;
 }
-
-function startAd() {
-  nodecg.sendMessage("startAd");
-}
-
-const previewScene = ref(sceneList.data?.[0] ?? "");
-
-watch(previewScene, (newVal, oldVal) => {
-  if (newVal != oldVal) {
-    nodecg.sendMessage("setPreviewScene", newVal);
-  }
-});
 </script>
 <template>
   <div id="sceneControlPanelParent" class="w-full flex flex-col gap-2">
@@ -141,7 +75,8 @@ watch(previewScene, (newVal, oldVal) => {
               <div class="flex flex-col gap-1">
                 <FloatLabel variant="on">
                   <InputText
-                    :player="i"
+                    v-model="player.streamKey"
+                    @update:model-value="activeRunners.save"
                     :label-id="`player-${i}-stream-key`"
                     class="w-full" />
                   <label :for="`player-${i}-stream-key`">
@@ -150,8 +85,13 @@ watch(previewScene, (newVal, oldVal) => {
                 </FloatLabel>
                 <FloatLabel variant="on">
                   <Select
+                    v-model="player.server"
+                    :options="servers"
+                    option-label="name"
+                    option-value="value"
+                    default-value="usw"
+                    @update:model-value="activeRunners.save"
                     class="server w-full"
-                    :player="i"
                     :label-id="`player-${i}-server`"></Select>
                   <label :for="`player-${i}-server`">
                     Player {{ i + 1 }} Server
