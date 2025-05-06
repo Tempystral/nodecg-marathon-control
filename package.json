@@ -78,8 +78,7 @@
   "nodecg": {
     "compatibleRange": "^2.1.11",
     "bundleDependencies": {
-      "nodecg-speedcontrol": "^2.4.0",
-      "nodecg-components": "^1.0.0"
+      "nodecg-speedcontrol": "^2.4.0"
     },
     "assetCategories": [
       {
