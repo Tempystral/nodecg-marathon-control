@@ -89,7 +89,7 @@ function toggleCam(i: number) {
                     :options="servers"
                     option-label="name"
                     option-value="value"
-                    default-value="usw"
+                    default-value="use"
                     @update:model-value="activeRunners.save"
                     class="server w-full"
                     :label-id="`player-${i}-server`"></Select>

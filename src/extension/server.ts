@@ -116,9 +116,7 @@ function updateStreamKeys(teams: RunDataTeam[]) {
     resetStreamKeys();
     teams.forEach((team) => {
       team.players.forEach(async (player, i) => {
-        const streamKey = player.social.twitch ?? player.name;
-        activeRunners.value[i].streamKey = streamKey;
-        await obs.setPlayerURL(i, streamKey);
+        activeRunners.value[i].streamKey = player.social.twitch ?? player.name;
       });
     });
   } catch (e) {
@@ -149,6 +147,16 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
       } catch {}
     setFilenameFormatting(autoRecord.value.filenameFormatting, newVal);
     streamSync.value.delay = [null, null, null, null];
+  }
+});
+
+activeRunners.on("change", (newVal, oldVal) => {
+  if (newVal && newVal != oldVal) {
+    newVal.forEach(async (player, i) => {
+      if (player.streamKey && player.server) {
+        await obs.setPlayerURL(i, player);
+      }
+    });
   }
 });
 

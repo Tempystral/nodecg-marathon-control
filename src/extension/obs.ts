@@ -14,7 +14,7 @@ import {
   stats,
   streamSync,
 } from "./util/replicants";
-import { AudioSource } from "@nmc/types";
+import { ActiveRunners, AudioSource } from "@nmc/types";
 import * as defaultValue from "./defaultValues";
 import { setIntervalAsync } from "set-interval-async";
 
@@ -328,7 +328,7 @@ async function setPlayerAudioSource(sourceName: string) {
   }
 }
 
-export async function setPlayerURL(index: number, streamkey: string) {
+export async function setPlayerURL(index: number, player: ActiveRunners) {
   const browserSources = await getBrowserSources();
   const playerSource = browserSources.find(
     (s) => s.inputName === `Player ${index + 1}`,
@@ -337,7 +337,8 @@ export async function setPlayerURL(index: number, streamkey: string) {
     await send("SetInputSettings", {
       inputName: `Player ${index + 1}`,
       inputSettings: {
-        url: `${streamHost}/live/key/${streamkey}?token=${viewerToken}&region=use`,
+        // eslint-disable-next-line max-len
+        url: `${streamHost}/live/key/${player.streamKey}?token=${viewerToken}&region=${player.server ?? "use"}`,
       },
     });
   }
