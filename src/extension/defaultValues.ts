@@ -1,4 +1,4 @@
-import { OBSStats } from "@nmc/types";
+import { ActiveRunners, OBSStats } from "@nmc/types";
 
 export const audioSourceTypes = [
   "wasapi_input_capture",
@@ -10,30 +10,30 @@ export const audioSourceTypes = [
   "vlc_source",
 ];
 
-export const activeRunners = [
+export const activeRunners : ActiveRunners[] = [
   {
     source: null,
     streamKey: null,
-    server: null,
-    cam: false,
+    server: "use",
+    cam: true,
   },
   {
     source: null,
     streamKey: null,
-    server: null,
-    cam: false,
+    server: "use",
+    cam: true,
   },
   {
     source: null,
     streamKey: null,
-    server: null,
-    cam: false,
+    server: "use",
+    cam: true,
   },
   {
     source: null,
     streamKey: null,
-    server: null,
-    cam: false,
+    server: "use",
+    cam: true,
   },
 ];
 
