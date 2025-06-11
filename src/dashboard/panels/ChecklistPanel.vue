@@ -2,7 +2,6 @@
 import {
   AdPlayerData,
   ChecklistData,
-  ServerConfig,
   StreamSyncData,
 } from "@nmc/types";
 import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
@@ -11,6 +10,7 @@ import { NAMESPACE } from "../utils";
 import Checkbox from "primevue/checkbox";
 import Button from "primevue/button";
 import Card from "primevue/card";
+import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 
 const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
 const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);

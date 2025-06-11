@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import SvgIcon from "@jamescoyle/vue-icon";
+import { mdiOpenInNew, mdiRefresh } from "@mdi/js";
 import {
-  ActiveRunners,
-  AdPlayerData,
-  ChecklistData,
-  OBSStatus,
+  ActiveRunners
 } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
@@ -11,15 +10,17 @@ import Card from "primevue/card";
 import FloatLabel from "primevue/floatlabel";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
-import ToggleButton from "primevue/togglebutton";
-import SvgIcon from "@jamescoyle/vue-icon";
-import { mdiVideoOff, mdiVideo, mdiRefresh } from "@mdi/js";
 import { onMounted, ref, watch } from "vue";
 import { NAMESPACE } from "../utils";
+import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
+import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 
 //const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
 //const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);
 //const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
+
+const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
+
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
 
@@ -52,6 +53,10 @@ function refreshStream(i: number) {
 function toggleCam(i: number) {
   if (activeRunners.data)
     activeRunners.data[i].cam = !activeRunners.data[i].cam;
+}
+
+function openStream(player: ActiveRunners) {
+  window.open(`${rtmp.viewer.url}/live/key/${player.streamKey}?token=${rtmp.viewer.token}&region=${player.server}`, '_blank')
 }
 </script>
 <template>
@@ -105,7 +110,7 @@ function toggleCam(i: number) {
               <div class="flex flex-col gap-1">
                 <Button
                   :player="i"
-                  id="refresh"
+                  :id="`player-${i}-refresh`"
                   severity="success"
                   rounded
                   variant="text"
@@ -115,6 +120,18 @@ function toggleCam(i: number) {
                   </template>
                 </Button>
                 <Button
+                  :player="i"
+                  :id="`player-${i}-open`"
+                  severity="info"
+                  rounded
+                  variant="text"
+                  @click="() => openStream(player)"
+                  >
+                  <template #icon>
+                    <svg-icon type="mdi" :path="mdiOpenInNew" />
+                  </template>
+                </Button>
+                <!-- <Button
                   :player="i"
                   id="cam"
                   rounded
@@ -128,10 +145,10 @@ function toggleCam(i: number) {
                         activeRunners.data[i].cam ? mdiVideo : mdiVideoOff
                       " />
                   </template>
-                </Button>
+                </Button> -->
               </div>
             </div>
-            <hr v-if="i < 3" class="mt-2 mr-2 ml-2" />
+            <hr v-if="i < activeRunners.data.length - 1" class="mt-2 mr-2 ml-2" />
           </div>
         </div>
 

@@ -1,18 +1,3 @@
-export interface ServerConfig {
-  websocket: {
-    ip: string;
-    port: string;
-    password: string;
-  };
-  rtmp: {
-    streamToken: string;
-    viewerToken: string;
-  };
-  RTMPServers: Record<string, any>;
-  botToken: string;
-  checklist: Record<string, any>;
-}
-
 export interface OBSStats {
   cpuUsage: string;
   fps: string;

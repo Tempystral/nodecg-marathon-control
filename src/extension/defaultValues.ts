@@ -17,7 +17,7 @@ export const activeRunners : ActiveRunners[] = [
     server: "use",
     cam: true,
   },
-  {
+  /* {
     source: null,
     streamKey: null,
     server: "use",
@@ -34,7 +34,7 @@ export const activeRunners : ActiveRunners[] = [
     streamKey: null,
     server: "use",
     cam: true,
-  },
+  }, */
 ];
 
 export const streamSync = {
