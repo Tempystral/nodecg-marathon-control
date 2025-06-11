@@ -106,7 +106,7 @@ nodecg.listenFor("refreshVideoSource", refreshVideoSource);
 ); */
 
 function resetStreamKeys() {
-  for (let j = 0; j < 4; j++) {
+  for (let j = 0; j < activeRunners.value.length; j++) {
     activeRunners.value[j].streamKey = null;
   }
 }

@@ -6,7 +6,7 @@ require("module-alias").addAlias("@nmc", require("path").join(__dirname, "."));
 
 import NodeCG from "@nodecg/types";
 import { set } from "./util/nodecg";
-import { ServerConfig } from "@nmc/types";
+import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 
 export default (nodecg: NodeCG.ServerAPI<ServerConfig>): void => {
   /**

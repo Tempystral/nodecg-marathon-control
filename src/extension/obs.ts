@@ -21,7 +21,7 @@ import { setIntervalAsync } from "set-interval-async";
 const streamHost = "https://lt2025.restream.space";
 const nodecg = get();
 const config = nodecg.bundleConfig.websocket;
-const { viewerToken } = nodecg.bundleConfig.rtmp;
+const { viewer } = nodecg.bundleConfig.rtmp;
 
 nodecg.log.info(
   `Connecting to OBS instance at ws://${config.ip}:${config.port}...`,
@@ -338,7 +338,7 @@ export async function setPlayerURL(index: number, player: ActiveRunners) {
       inputName: `Player ${index + 1}`,
       inputSettings: {
         // eslint-disable-next-line max-len
-        url: `${streamHost}/live/key/${player.streamKey}?token=${viewerToken}&region=${player.server ?? "use"}`,
+        url: `${streamHost}/live/key/${player.streamKey}?token=${viewer.token}&region=${player.server ?? "use"}`,
       },
     });
   }

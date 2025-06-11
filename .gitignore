@@ -135,3 +135,7 @@ out
 
 ltinfo.md
 nodecg.json
+./extension
+./dashboard
+./graphics
+./shared/dist

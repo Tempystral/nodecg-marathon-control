@@ -1,4 +1,4 @@
-import { ServerConfig } from "@nmc/types";
+import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 import NodeCG from "@nodecg/types";
 
 type ServerNodeCG = NodeCG.ServerAPI<ServerConfig>;

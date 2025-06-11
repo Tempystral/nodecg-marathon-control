@@ -1,5 +1,5 @@
 {
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "type": "object",
     "default": {
         "websocket": {
@@ -11,18 +11,18 @@
         "botToken": "",
         "checklist": {}
     },
-    "title": "Root Schema",
     "required": [
         "websocket",
-        "RTMPServers",
+        "rtmp",
         "botToken",
         "checklist"
     ],
+    "additionalProperties": false,
     "properties": {
         "websocket": {
             "type": "object",
             "default": {},
-            "title": "The websocket Schema",
+            "additionalProperties": false,
             "required": [
                 "ip",
                 "port",
@@ -32,7 +32,6 @@
                 "ip": {
                     "type": "string",
                     "default": "",
-                    "title": "The ip Schema",
                     "examples": [
                         "localhost"
                     ]
@@ -40,7 +39,6 @@
                 "port": {
                     "type": "string",
                     "default": "",
-                    "title": "The port Schema",
                     "examples": [
                         "4455"
                     ]
@@ -48,7 +46,6 @@
                 "password": {
                     "type": "string",
                     "default": "",
-                    "title": "The password Schema",
                     "examples": [
                         ""
                     ]
@@ -62,20 +59,12 @@
                 }
             ]
         },
-        "RTMPServers": {
-            "type": "object",
-            "default": {},
-            "title": "The RTMPServers Schema",
-            "required": [],
-            "properties": {},
-            "examples": [
-                {}
-            ]
+        "rtmp": {
+            "$ref": "./rtmp/server.json"
         },
         "botToken": {
             "type": "string",
             "default": "",
-            "title": "The botToken Schema",
             "examples": [
                 ""
             ]
@@ -83,12 +72,12 @@
         "checklist": {
             "type": "object",
             "default": {},
-            "title": "The checklist Schema",
             "required": [],
             "properties": {},
             "examples": [
                 {}
-            ]
+            ],
+            "additionalProperties": true
         }
     },
     "examples": [
@@ -98,7 +87,7 @@
                 "port": "4455",
                 "password": ""
             },
-            "RTMPServers": {},
+            "rtmp": {},
             "botToken": "",
             "checklist": {}
         }
