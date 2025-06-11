@@ -14,7 +14,7 @@ import Select from "primevue/select";
 import ToggleButton from "primevue/togglebutton";
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiVideoOff, mdiVideo, mdiRefresh } from "@mdi/js";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { NAMESPACE } from "../utils";
 
 //const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
@@ -23,7 +23,11 @@ import { NAMESPACE } from "../utils";
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
 
-const previewScene = ref(sceneList.data?.[0] ?? "");
+const previewScene = ref("");
+
+onMounted(() => {
+  previewScene.value = sceneList.data?.[0] ?? "";
+})
 
 watch(previewScene, (newVal, oldVal) => {
   if (newVal != oldVal) {

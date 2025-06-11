@@ -89,7 +89,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -130,9 +129,9 @@ dist
 .pnp.*
 
 # Built files
-/dashboard/
-/extension/
-/graphics/
 
 # vscode stuff
 .vscode/*
+
+ltinfo.md
+nodecg.json

@@ -15,7 +15,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    sourcemap: true,
+    sourcemap: false,
   },
   plugins: [
     vue(),
