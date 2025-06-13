@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiRecord, mdiSurroundSound } from "@mdi/js";
-import { ChecklistData, OBSStatus, SettingsReplicant } from "@nmc/types";
+import { OBSStatus, SettingsReplicant } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
 import { computed, watch } from "vue";
 import { NAMESPACE } from "../utils";
+import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 const settings = useReplicant<SettingsReplicant>("settings", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);

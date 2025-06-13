@@ -337,8 +337,7 @@ export async function setPlayerURL(index: number, player: ActiveRunners) {
     await send("SetInputSettings", {
       inputName: `Player ${index + 1}`,
       inputSettings: {
-        // eslint-disable-next-line max-len
-        url: `${streamHost}/live/key/${player.streamKey}?token=${viewer.token}&region=${player.server ?? "use"}`,
+        url: `${streamHost}/live/key/${player.streamKey}?token=${viewer.token}&region=use`,
       },
     });
   }

@@ -3,7 +3,7 @@ import {
   AdPlayerData,
   AudioSource,
   AutoRecordSettings,
-  ChecklistData,
+
   OBSStats,
   OBSStatus,
   StreamSyncData,
@@ -11,6 +11,7 @@ import {
 import { RunDataActiveRun, Timer } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValue from "../defaultValues";
 import { get as nodecg } from "./nodecg";
+import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 /**
  * This is where you can declare all your replicant to import easily into other files,

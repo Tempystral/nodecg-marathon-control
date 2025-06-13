@@ -1,8 +1,10 @@
 import path from "path";
 
+import { OBSStatus } from "@nmc/types";
 import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
-import { get } from "./util/nodecg";
+import * as defaultValues from "./defaultValues";
 import * as obs from "./obs";
+import { get } from "./util/nodecg";
 import {
   activeRunners,
   adPlayer,
@@ -16,8 +18,6 @@ import {
   timer,
 } from "./util/replicants";
 import { useWebsocketServer } from "./websocketServer";
-
-import { ChecklistData, OBSStatus } from "@nmc/types";
 
 const nodecg = get();
 const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
@@ -131,7 +131,6 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
     return;
   }
   if (newVal.id !== oldVal?.id) {
-    if (checklist.value.started) checklist.value.default.playRun = true;
     if (settings.value.autoSetRunners) {
       updateStreamKeys(newVal.teams);
     }
@@ -190,57 +189,26 @@ async function emergencyTransition(data: OBSStatus) {
 
 function updateChecklist(newVal: OBSStatus) {
   if (newVal.inIntermission && timer.value?.state === "finished") {
-    const def = {} as ChecklistData["default"];
-    const custom = {};
-    for (const item of Object.keys(checklist.value.default)) {
-      Object.defineProperty(def, item, { value: false });
-    }
-    for (const item of Object.keys(checklist.value.custom ?? {})) {
-      Object.defineProperty(custom, item, { value: false });
-    }
-    checklist.value = {
-      started: true,
-      completed: false,
-      default: def,
-      custom: custom,
-    };
+    checklist.value = defaultValues.checklist;
+    checklist.value.started = true;
   }
 }
 
-checklist.on("change", (newVal, oldVal) => {
-  if (
-    !oldVal &&
-    JSON.stringify(newVal.customOld) !==
-      JSON.stringify(nodecg.bundleConfig.checklist)
-  )
-    createCustomChecklist();
-  if (newVal.started && !newVal.completed) {
-    let item: keyof typeof newVal.default;
-    for (item in newVal.default) {
-      if (!newVal.default[item]) {
+checklist.on("change", (newVal) => {
+  if (!newVal.completed) {
+    let item: keyof typeof newVal.items;
+    for (item in newVal.items) {
+      
+      if (newVal.items[item] === false) {
         checklist.value.completed = false;
         return;
       }
     }
-    for (const item of Object.keys(newVal.custom ?? {})) {
-      if (!newVal.custom?.[item]) {
-        return (checklist.value.completed = false);
-      }
-    }
-    // setTimeout(() => {
-    //   checklist.value.completed = true;
-    // }, 100);
+    setTimeout(() => {
+      checklist.value.completed = true;
+    }, 100);
   }
 });
-
-function createCustomChecklist() {
-  checklist.value.customOld = nodecg.bundleConfig.checklist;
-  const custom = {};
-  for (const item of Object.keys(nodecg.bundleConfig.checklist)) {
-    Object.defineProperty(custom, item, { value: false });
-  }
-  checklist.value.custom = custom;
-}
 
 // Set filename formatting.
 function setFilenameFormatting(filename: string, data: RunData) {
