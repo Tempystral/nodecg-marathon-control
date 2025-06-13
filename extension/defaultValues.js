@@ -97,18 +97,13 @@ exports.stats = {
 exports.checklist = {
     started: false,
     completed: false,
-    default: {
-        playRun: false,
-        playAd: false,
+    items: {
         verifyStream: false,
-        syncStreams: false,
         checkAudio: false,
         checkInfo: false,
         checkReady: false,
-        finalCheck: false,
-    },
-    custom: {},
-    customOld: {},
+        finalCheck: false
+    }
 };
 exports.adPlayer = {
     adPlaying: false,

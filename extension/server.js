@@ -37,8 +37,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
-const nodecg_1 = require("./util/nodecg");
+const defaultValues = __importStar(require("./defaultValues"));
 const obs = __importStar(require("./obs"));
+const nodecg_1 = require("./util/nodecg");
 const replicants_1 = require("./util/replicants");
 const websocketServer_1 = require("./websocketServer");
 const nodecg = (0, nodecg_1.get)();
@@ -124,8 +125,6 @@ replicants_1.runDataActiveRun.on("change", (newVal, oldVal) => {
         return;
     }
     if (newVal.id !== oldVal?.id) {
-        if (replicants_1.checklist.value.started)
-            replicants_1.checklist.value.default.playRun = true;
         if (replicants_1.settings.value.autoSetRunners) {
             updateStreamKeys(newVal.teams);
         }
@@ -178,53 +177,24 @@ async function emergencyTransition(data) {
 }
 function updateChecklist(newVal) {
     if (newVal.inIntermission && replicants_1.timer.value?.state === "finished") {
-        const def = {};
-        const custom = {};
-        for (const item of Object.keys(replicants_1.checklist.value.default)) {
-            Object.defineProperty(def, item, { value: false });
-        }
-        for (const item of Object.keys(replicants_1.checklist.value.custom ?? {})) {
-            Object.defineProperty(custom, item, { value: false });
-        }
-        replicants_1.checklist.value = {
-            started: true,
-            completed: false,
-            default: def,
-            custom: custom,
-        };
+        replicants_1.checklist.value = defaultValues.checklist;
+        replicants_1.checklist.value.started = true;
     }
 }
-replicants_1.checklist.on("change", (newVal, oldVal) => {
-    if (!oldVal &&
-        JSON.stringify(newVal.customOld) !==
-            JSON.stringify(nodecg.bundleConfig.checklist))
-        createCustomChecklist();
-    if (newVal.started && !newVal.completed) {
+replicants_1.checklist.on("change", (newVal) => {
+    if (!newVal.completed) {
         let item;
-        for (item in newVal.default) {
-            if (!newVal.default[item]) {
+        for (item in newVal.items) {
+            if (newVal.items[item] === false) {
                 replicants_1.checklist.value.completed = false;
                 return;
             }
         }
-        for (const item of Object.keys(newVal.custom ?? {})) {
-            if (!newVal.custom?.[item]) {
-                return (replicants_1.checklist.value.completed = false);
-            }
-        }
-        // setTimeout(() => {
-        //   checklist.value.completed = true;
-        // }, 100);
+        setTimeout(() => {
+            replicants_1.checklist.value.completed = true;
+        }, 100);
     }
 });
-function createCustomChecklist() {
-    replicants_1.checklist.value.customOld = nodecg.bundleConfig.checklist;
-    const custom = {};
-    for (const item of Object.keys(nodecg.bundleConfig.checklist)) {
-        Object.defineProperty(custom, item, { value: false });
-    }
-    replicants_1.checklist.value.custom = custom;
-}
 // Set filename formatting.
 function setFilenameFormatting(filename, data) {
     filename = filename.replace(/%GAME/g, data.game ?? "");
