@@ -54,11 +54,6 @@ function refreshStream(i: number) {
   }
 }
 
-function toggleCam(i: number) {
-  if (activeRunners.data)
-    activeRunners.data[i].cam = !activeRunners.data[i].cam;
-}
-
 function openStream(player: ActiveRunners) {
   window.open(`${rtmp.viewer.url}/live/key/${player.streamKey}?token=${rtmp.viewer.token}&region=${player.server}`, '_blank')
 }
@@ -107,7 +102,7 @@ function openStream(player: ActiveRunners) {
                     class="server w-full"
                     :label-id="`player-${i}-server`"></Select>
                   <label :for="`player-${i}-server`">
-                    Player {{ i + 1 }} Server
+                    View Player {{ i + 1 }} from Server:
                   </label>
                 </FloatLabel>
               </div>

@@ -195,18 +195,19 @@ function updateChecklist(newVal: OBSStatus) {
 }
 
 checklist.on("change", (newVal) => {
-  //nodecg.log.info(newVal.items)
-  let item: keyof typeof newVal.items;
-  for (item in newVal.items) {
-    
-    if (newVal.items[item] === false) {
-      checklist.value.completed = false;
-      return;
+  if (!newVal.completed) {
+    let item: keyof typeof newVal.items;
+    for (item in newVal.items) {
+      
+      if (newVal.items[item] === false) {
+        checklist.value.completed = false;
+        return;
+      }
     }
+    setTimeout(() => {
+      checklist.value.completed = true;
+    }, 100);
   }
-  setTimeout(() => {
-    checklist.value.completed = true;
-  }, 100);
 });
 
 // Set filename formatting.
