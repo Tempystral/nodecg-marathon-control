@@ -2,7 +2,8 @@
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiOpenInNew, mdiRefresh } from "@mdi/js";
 import {
-  ActiveRunners
+  ActiveRunners,
+  OBSStatus
 } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
@@ -15,14 +16,11 @@ import { NAMESPACE } from "../utils";
 import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
 import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 
-//const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
-//const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);
-//const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
-
 const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
 
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
+const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
 
 const previewScene = ref("");
 
@@ -35,6 +33,12 @@ watch(previewScene, (newVal, oldVal) => {
     nodecg.sendMessage("setPreviewScene", newVal);
   }
 });
+
+watch(() => obsStatus.data, (newVal, oldVal) => {
+  if (newVal?.previewScene && newVal.previewScene != oldVal?.previewScene) {
+    previewScene.value = newVal?.previewScene;
+  }
+})
 
 const servers = [
   { name: "US West", value: "usw" },

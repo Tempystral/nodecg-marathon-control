@@ -1,4 +1,5 @@
-import { ActiveRunners, OBSStats } from "@nmc/types";
+import { ActiveRunners,  OBSStats } from "@nmc/types";
+import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 export const audioSourceTypes = [
   "wasapi_input_capture",
@@ -102,21 +103,16 @@ export const stats: OBSStats = {
   uptime: "00:00:00",
 };
 
-export const checklist = {
+export const checklist : ChecklistData = {
   started: false,
   completed: false,
-  default: {
-    playRun: false,
-    playAd: false,
+  items: {
     verifyStream: false,
-    syncStreams: false,
     checkAudio: false,
     checkInfo: false,
     checkReady: false,
-    finalCheck: false,
-  },
-  custom: {},
-  customOld: {},
+    finalCheck: false
+  }
 };
 
 export const adPlayer = {

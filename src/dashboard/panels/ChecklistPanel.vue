@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   AdPlayerData,
-  ChecklistData,
   StreamSyncData,
 } from "@nmc/types";
 import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
@@ -11,10 +10,9 @@ import Checkbox from "primevue/checkbox";
 import Button from "primevue/button";
 import Card from "primevue/card";
 import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
+import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
-const adPlayer = useReplicant<AdPlayerData>("adPlayer", NAMESPACE);
-const streamSync = useReplicant<StreamSyncData>("streamSync", NAMESPACE);
 
 const bundleConfig = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
 
@@ -34,14 +32,9 @@ adPlayer.on("change", (newVal) => {
 
 */
 function reset() {
-  const def = {};
-  const custom = {};
   if (checklist.data) {
-    for (const key in checklist.data.default) {
-      checklist.data.default[key as keyof ChecklistData["default"]] = false;
-    }
-    for (const key in checklist.data.custom) {
-      checklist.data.custom[key] = false;
+    for (const key in checklist.data.items) {
+      checklist.data.items[key as keyof ChecklistData["items"]] = false;
     }
     checklist.data.completed = false;
     checklist.save();
@@ -67,13 +60,13 @@ function override() {
     <Button
       id="reset"
       severity="danger"
-      @click="reset()"
+      @click="reset"
       class="w-full"
       label="Reset">
     </Button>
   </div>
 
-  <div class="flex flex-col gap-2 mb-2">
+  <div v-if="checklist.data" class="flex flex-col gap-2 mb-2">
     <!-- <div class="flex items-center gap-2">
       <Checkbox
         input-id="syncStreams"
@@ -82,28 +75,31 @@ function override() {
       <span>Sync the streams</span>
     </div> -->
 
-    <div class="flex items-center gap-2">
+    <!-- <div class="flex items-center gap-2">
       <Checkbox
         input-id="playRun"
         title="This checkbox is managed by the system."
-        disabled></Checkbox>
+        binary
+        disabled
+        v-model="checklist.data.default.playRun"
+        />
       <span>Play the next run</span>
-    </div>
-    <div class="flex items-center gap-2">
+    </div> -->
+    <!-- <div class="flex items-center gap-2">
       <Checkbox
         input-id="playAd"
         title="This checkbox is managed by the system."
         disabled></Checkbox>
       <span>Play an ad</span>
-    </div>
-  </div>
+    </div> -->
 
-  <div v-if="checklist.data?.default" class="flex flex-col gap-2 mb-2">
+  
     <div class="flex items-center gap-2">
       <Checkbox
         input-id="verifyStream"
         binary
-        v-model="checklist.data.default.verifyStream" />
+        v-model="checklist.data.items.verifyStream"
+        @update:model-value="checklist.save" />
       <span>Verify the stream key and layout</span>
     </div>
 
@@ -111,44 +107,49 @@ function override() {
       <Checkbox
         input-id="checkAudio"
         binary
-        v-model="checklist.data.default.checkAudio" />
+        v-model="checklist.data.items.checkAudio"
+        @update:model-value="checklist.save" />
       <span>Adjust audio levels</span>
     </div>
     <div class="flex items-center gap-2">
       <Checkbox
         input-id="checkInfo"
         binary
-        v-model="checklist.data.default.checkInfo" />
+        v-model="checklist.data.items.checkInfo"
+        @update:model-value="checklist.save" />
       <span>Verify run information</span>
     </div>
     <div class="flex items-center gap-2">
       <Checkbox
         input-id="finalCheck"
         binary
-        v-model="checklist.data.default.finalCheck" />
+        v-model="checklist.data.items.finalCheck"
+        @update:model-value="checklist.save" />
       <span>Make sure everything looks good</span>
     </div>
     <div class="flex items-center gap-2">
       <Checkbox
         input-id="checkReady"
         binary
-        v-model="checklist.data.default.checkReady" />
+        v-model="checklist.data.items.checkReady"
+        @update:model-value="checklist.save" />
       <span>Ask everyone if they're ready</span>
     </div>
   </div>
 
-  <div id="custom" v-if="checklist.data?.custom" class="flex flex-col gap-2">
+  <!-- <div id="custom" v-if="checklist.data?.custom" class="flex flex-col gap-2">
     <div v-for="item of bundleConfig.checklist.custom" :key="item">
       <div class="flex items-center gap-2">
         <Checkbox
           :input-id="item"
           :id="item"
           binary
-          v-model="checklist.data.custom[item]" />
+          v-model="checklist.data.custom[item]"
+        @update:model-value="checklist.save" />
         <label :for="item">{{ item }}</label>
       </div>
     </div>
-  </div>
+  </div> -->
   <Card class="mt-2">
     <template #content>
       <div id="statusText" class="-mt-2 -mb-2">

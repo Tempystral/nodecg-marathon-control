@@ -6,9 +6,9 @@ import FloatLabel from "primevue/floatlabel";
 import Select from "primevue/select";
 import { ref, watch } from "vue";
 
-const settings = useReplicant<SettingsReplicant>("settings", undefined)!;
-const sceneList = useReplicant<string[]>("sceneList", undefined)!;
-const obsStatus = useReplicant<OBSStatus>("obsStatus", undefined)!;
+const settings = useReplicant<SettingsReplicant>("settings", undefined);
+const sceneList = useReplicant<string[]>("sceneList", undefined);
+const obsStatus = useReplicant<OBSStatus>("obsStatus", undefined);
 
 /* settings.window.onload = () => {
   NodeCG.waitForReplicants(settings, sceneList, obsStatus).then(() => {

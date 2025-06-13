@@ -50,23 +50,6 @@ export interface AudioSource {
   updateLocation: string;
 }
 
-export interface ChecklistData {
-  started: boolean;
-  completed: boolean;
-  default: {
-    playRun: boolean;
-    playAd: boolean;
-    verifyStream: boolean;
-    syncStreams: boolean;
-    checkAudio: boolean;
-    checkInfo: boolean;
-    checkReady: boolean;
-    finalCheck: boolean;
-  };
-  custom?: Record<string, any>;
-  customOld?: Record<string, any>;
-}
-
 export interface ReturnDelay {
   playerNum: number;
   currentDelay: number;
