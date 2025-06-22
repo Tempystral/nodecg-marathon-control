@@ -1,6 +1,3 @@
 import OBSSettingsPanel from "./panels/OBSSettingsPanel.vue";
-import { create } from "./template";
-
-import "./style.css";
-
+import { create } from "./../browser-shared/template";
 const app = create(OBSSettingsPanel);

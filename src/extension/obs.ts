@@ -101,6 +101,43 @@ function setRecording(data: OBSEventTypes["RecordStateChanged"]) {
 // Transition events.
 obs.on("SceneTransitionStarted", transition);
 
+async function transition() {
+  obsStatus.value.inTransition = true;
+  let shouldRecord = false;
+
+  if (previewIsIntermission()) {
+    obsStatus.value.inIntermission = true;
+    if (
+      settings.value.autoRecord &&
+      obsStatus.value.recording &&
+      !obsStatus.value.emergencyTransition
+    )
+      await send("StopRecord");
+  }
+  if (!previewIsIntermission()) {
+    shouldRecord = true;
+    obsStatus.value.emergencyTransition = false;
+  }
+
+  obs.once("SceneTransitionEnded", async () => {
+    obsStatus.value.inTransition = false;
+    if (shouldRecord) {
+      obsStatus.value.inIntermission = false;
+      if (!obsStatus.value.recording && settings.value.autoRecord)
+        await send("StartRecord");
+    }
+  });
+}
+
+function previewIsIntermission() {
+  return settings.value.intermissionScenes.includes(obsStatus.value.previewScene);
+}
+
+/* function programIsIntermission() {
+  return settings.value.intermissionScenes.includes(obsStatus.value.programScene);
+} */
+
+
 // After setting up event hooks, connect
 obs
   .connect(`ws://${config.ip}:${config.port}`, config.password, {
@@ -181,7 +218,7 @@ async function start(msg: boolean) {
     previewScene: previewScene.currentPreviewSceneName,
     programScene: programScene.currentProgramSceneName,
     inIntermission:
-      programScene.currentProgramSceneName === settings.value.intermissionScene
+    settings.value.intermissionScenes.includes(programScene.currentProgramSceneName)
         ? true
         : false,
     inTransition: false,
@@ -343,32 +380,4 @@ export async function setPlayerURL(index: number, player: ActiveRunners) {
   }
 }
 
-async function transition() {
-  obsStatus.value.inTransition = true;
-  let startRecord = false;
-  if (obsStatus.value.previewScene === settings.value.intermissionScene) {
-    obsStatus.value.inIntermission = true;
-    if (
-      settings.value.autoRecord &&
-      obsStatus.value.recording &&
-      !obsStatus.value.emergencyTransition
-    )
-      await send("StopRecord");
-  }
-  if (
-    obsStatus.value.previewScene !== settings.value.intermissionScene &&
-    obsStatus.value.previewScene !== adPlayer.value.videoScene
-  ) {
-    startRecord = true;
-    obsStatus.value.emergencyTransition = false;
-  }
 
-  obs.once("SceneTransitionEnded", async () => {
-    obsStatus.value.inTransition = false;
-    if (startRecord) {
-      obsStatus.value.inIntermission = false;
-      if (!obsStatus.value.recording && settings.value.autoRecord)
-        await send("StartRecord");
-    }
-  });
-}

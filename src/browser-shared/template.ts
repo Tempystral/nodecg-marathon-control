@@ -5,8 +5,8 @@ import Tooltip from "primevue/tooltip";
 import { Component, createApp } from "vue";
 import "./style.css";
 
-export function create(component: Component) {
-  const app = createApp(component);
+export function create(component: Component, props?: Record<string, any>) {
+  const app = createApp(component, props);
   app.use(createHead());
   app.use(PrimeVue, {
     theme: {

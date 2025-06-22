@@ -3,7 +3,8 @@ import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiOpenInNew, mdiRefresh } from "@mdi/js";
 import {
   ActiveRunners,
-  OBSStatus
+  OBSStatus,
+  SettingsReplicant
 } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
@@ -21,11 +22,12 @@ const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
+const settings = useReplicant<SettingsReplicant>("settings", undefined);
 
 const previewScene = ref("");
 
 onMounted(() => {
-  previewScene.value = sceneList.data?.[0] ?? "";
+  previewScene.value = settings.data?.defaultScene ?? "";
 })
 
 watch(previewScene, (newVal, oldVal) => {

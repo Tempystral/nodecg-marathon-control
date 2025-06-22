@@ -13,19 +13,29 @@ export interface OBSStats {
 }
 
 export interface OBSStatus {
+  /** Name of the current preview scene */
   previewScene: string;
+  /** Name of the current program scene */
   programScene: string;
+  /** Is the current preview scene listed as an intermission scene? */
   inIntermission: boolean;
+  /** Is OBS transitioning scenes? */
   inTransition: boolean;
+  /** Is the emergency transition active? */
   emergencyTransition: boolean;
+  /** Is OBS streaming? */
   streaming: boolean;
+  /** Is OBS recording? */
   recording: boolean;
 }
 
 export interface SettingsReplicant {
   previewCode: string;
   programCode: string;
-  intermissionScene: string;
+  /** List of scenes considered intermissions */
+  intermissionScenes: string[];
+  /** The default scene to return to during an emergency */
+  defaultScene: string;
   autoRecord: boolean;
   autoSetLayout: boolean;
   autoSetRunners: boolean;
