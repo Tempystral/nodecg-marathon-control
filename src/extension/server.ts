@@ -181,7 +181,7 @@ async function emergencyTransition(data: OBSStatus) {
     return;
   }
   await obs.send("SetCurrentPreviewScene", {
-    sceneName: settings.value.intermissionScenes[0],
+    sceneName: settings.value.defaultScene,
   });
   await obs.send("TriggerStudioModeTransition");
   return;

@@ -142,6 +142,7 @@ function toggleAutoRunner() {
     <Button id="showWelcome" severity="secondary" @click="openDialog">
       Show Welcome Screen
     </Button>
+
     <FloatLabel variant="on" class="w-full mt-2">
       <MultiSelect
         id="intermissionScene"
@@ -151,6 +152,17 @@ function toggleAutoRunner() {
         @update:model-value="settings.save()"
         class="w-full"></MultiSelect>
       <label for="intermission_scene">Intermission Scenes</label>
+    </FloatLabel>
+
+    <FloatLabel variant="on" class="w-full mt-2">
+      <Select
+        id="defaultScene"
+        labelid="default_scene"
+        v-model="settings.data.defaultScene"
+        :options="sceneList.data"
+        @update:model-value="settings.save()"
+        class="w-full"></Select>
+      <label for="default_scene">Default Selected Scene</label>
     </FloatLabel>
   </div>
 </template>
