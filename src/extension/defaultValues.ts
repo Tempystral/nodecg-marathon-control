@@ -72,6 +72,7 @@ export const settings: SettingsReplicant = {
   previewCode: "",
   programCode: "",
   intermissionScenes: [],
+  defaultScene: "",
   autoRecord: false,
   autoSetLayout: false,
   autoSetRunners: false,
