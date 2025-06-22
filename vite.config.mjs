@@ -1,5 +1,4 @@
-// import { default as vue } from "@vitejs/plugin-vue";
-import vue from "@vitejs/plugin-vue";
+import { default as vue } from "@vitejs/plugin-vue";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { defineConfig } from "vite";
