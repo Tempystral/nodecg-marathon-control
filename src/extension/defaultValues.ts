@@ -1,4 +1,4 @@
-import { ActiveRunners,  OBSStats } from "@nmc/types";
+import { ActiveRunners,  OBSStats, SettingsReplicant } from "@nmc/types";
 import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 export const audioSourceTypes = [
@@ -68,10 +68,10 @@ export const botSettings = {
   channels: {},
 };
 
-export const settings = {
+export const settings: SettingsReplicant = {
   previewCode: "",
   programCode: "",
-  intermissionScene: "",
+  intermissionScenes: [],
   autoRecord: false,
   autoSetLayout: false,
   autoSetRunners: false,

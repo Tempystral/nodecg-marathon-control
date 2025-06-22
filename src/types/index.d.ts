@@ -25,7 +25,7 @@ export interface OBSStatus {
 export interface SettingsReplicant {
   previewCode: string;
   programCode: string;
-  intermissionScene: string;
+  intermissionScenes: string[];
   autoRecord: boolean;
   autoSetLayout: boolean;
   autoSetRunners: boolean;
