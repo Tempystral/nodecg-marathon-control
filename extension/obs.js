@@ -103,6 +103,35 @@ function setRecording(data) {
 }
 // Transition events.
 obs.on("SceneTransitionStarted", transition);
+async function transition() {
+    replicants_1.obsStatus.value.inTransition = true;
+    let shouldRecord = false;
+    if (previewIsIntermission()) {
+        replicants_1.obsStatus.value.inIntermission = true;
+        if (replicants_1.settings.value.autoRecord &&
+            replicants_1.obsStatus.value.recording &&
+            !replicants_1.obsStatus.value.emergencyTransition)
+            await send("StopRecord");
+    }
+    if (!previewIsIntermission()) {
+        shouldRecord = true;
+        replicants_1.obsStatus.value.emergencyTransition = false;
+    }
+    obs.once("SceneTransitionEnded", async () => {
+        replicants_1.obsStatus.value.inTransition = false;
+        if (shouldRecord) {
+            replicants_1.obsStatus.value.inIntermission = false;
+            if (!replicants_1.obsStatus.value.recording && replicants_1.settings.value.autoRecord)
+                await send("StartRecord");
+        }
+    });
+}
+function previewIsIntermission() {
+    return replicants_1.settings.value.intermissionScenes.includes(replicants_1.obsStatus.value.previewScene);
+}
+/* function programIsIntermission() {
+  return settings.value.intermissionScenes.includes(obsStatus.value.programScene);
+} */
 // After setting up event hooks, connect
 obs
     .connect(`ws://${config.ip}:${config.port}`, config.password, {
@@ -167,7 +196,7 @@ async function start(msg) {
     replicants_1.obsStatus.value = {
         previewScene: previewScene.currentPreviewSceneName,
         programScene: programScene.currentProgramSceneName,
-        inIntermission: programScene.currentProgramSceneName === replicants_1.settings.value.intermissionScene
+        inIntermission: replicants_1.settings.value.intermissionScenes.includes(programScene.currentProgramSceneName)
             ? true
             : false,
         inTransition: false,
@@ -306,28 +335,4 @@ async function setPlayerURL(index, player) {
             },
         });
     }
-}
-async function transition() {
-    replicants_1.obsStatus.value.inTransition = true;
-    let startRecord = false;
-    if (replicants_1.obsStatus.value.previewScene === replicants_1.settings.value.intermissionScene) {
-        replicants_1.obsStatus.value.inIntermission = true;
-        if (replicants_1.settings.value.autoRecord &&
-            replicants_1.obsStatus.value.recording &&
-            !replicants_1.obsStatus.value.emergencyTransition)
-            await send("StopRecord");
-    }
-    if (replicants_1.obsStatus.value.previewScene !== replicants_1.settings.value.intermissionScene &&
-        replicants_1.obsStatus.value.previewScene !== replicants_1.adPlayer.value.videoScene) {
-        startRecord = true;
-        replicants_1.obsStatus.value.emergencyTransition = false;
-    }
-    obs.once("SceneTransitionEnded", async () => {
-        replicants_1.obsStatus.value.inTransition = false;
-        if (startRecord) {
-            replicants_1.obsStatus.value.inIntermission = false;
-            if (!replicants_1.obsStatus.value.recording && replicants_1.settings.value.autoRecord)
-                await send("StartRecord");
-        }
-    });
 }
