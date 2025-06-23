@@ -69,10 +69,6 @@ const recordIconStyle = computed(() =>
           :disabled="
             settings.data?.forceChecklist && !checklist.data?.completed
           "
-          v-tooltip.top="
-            !checklist.data?.completed &&
-            'Please complete the checklist to unlock this button.'
-          "
           @click="transition">
           Transition
         </Button>

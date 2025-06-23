@@ -59,6 +59,11 @@ function refreshStream(i: number) {
 function openStream(player: ActiveRunners) {
   window.open(`${rtmp.viewer.url}/live/key/${player.streamKey}?token=${rtmp.viewer.token}&region=${player.server}`, '_blank')
 }
+
+function isRunnerLive() {
+  return !obsStatus.data?.inIntermission;
+}
+
 </script>
 <template>
   <div id="sceneControlPanelParent" class="w-full flex flex-col gap-2">
@@ -73,27 +78,41 @@ function openStream(player: ActiveRunners) {
       </Select>
     </div>
     <Card id="runnerInfo" v-if="activeRunners.data">
-      <template #title> Runner Info </template>
+      <template #title> Active Runner Info </template>
       <template #content>
-        <div class="flex flex-col gap-2 items-center">
           <div
             class="playerDiv"
             :player="i"
             v-for="(player, i) of activeRunners.data"
             :key="`${player}-${i}`">
-            <div class="flex gap-1">
-              <div class="flex flex-col gap-1">
+              <div class="flex gap-1">
+                <Button
+                  :player="i"
+                  :id="`player-${i}-refresh`"
+                  severity="success"
+                  
+                  variant="text"
+                  @click="refreshStream(i)">
+                  <template #icon>
+                    <svg-icon type="mdi" :path="mdiRefresh" />
+                  </template>
+                </Button>
                 <FloatLabel variant="on">
                   <InputText
                     v-model="player.streamKey"
                     @update:model-value="activeRunners.save"
+                    :disabled="isRunnerLive()"
+                    v-tooltip="
+                      isRunnerLive() &&
+                      'Cannot change stream key while the runner is live'
+                    "
                     :label-id="`player-${i}-stream-key`"
-                    class="w-full" />
+                    fluid />
                   <label :for="`player-${i}-stream-key`">
                     Player {{ i + 1 }} Stream Key
                   </label>
                 </FloatLabel>
-                <FloatLabel variant="on">
+                <FloatLabel variant="on" >
                   <Select
                     v-model="player.server"
                     :options="servers"
@@ -101,30 +120,18 @@ function openStream(player: ActiveRunners) {
                     option-value="value"
                     default-value="use"
                     @update:model-value="activeRunners.save"
-                    class="server w-full"
+                    fluid
                     :label-id="`player-${i}-server`"></Select>
                   <label :for="`player-${i}-server`">
-                    View Player {{ i + 1 }} from Server:
+                    View from server:
                   </label>
                 </FloatLabel>
-              </div>
-              <div class="flex flex-col gap-1">
-                <Button
-                  :player="i"
-                  :id="`player-${i}-refresh`"
-                  severity="success"
-                  rounded
-                  variant="text"
-                  @click="refreshStream(i)">
-                  <template #icon>
-                    <svg-icon type="mdi" :path="mdiRefresh" />
-                  </template>
-                </Button>
+                
                 <Button
                   :player="i"
                   :id="`player-${i}-open`"
                   severity="info"
-                  rounded
+                  
                   variant="text"
                   @click="() => openStream(player)"
                   >
@@ -132,102 +139,10 @@ function openStream(player: ActiveRunners) {
                     <svg-icon type="mdi" :path="mdiOpenInNew" />
                   </template>
                 </Button>
-                <!-- <Button
-                  :player="i"
-                  id="cam"
-                  rounded
-                  variant="text"
-                  :severity="activeRunners.data[i].cam ? 'info' : 'danger'"
-                  @click="toggleCam(i)">
-                  <template #icon>
-                    <svg-icon
-                      type="mdi"
-                      :path="
-                        activeRunners.data[i].cam ? mdiVideo : mdiVideoOff
-                      " />
-                  </template>
-                </Button> -->
               </div>
-            </div>
             <hr v-if="i < activeRunners.data.length - 1" class="mt-2 mr-2 ml-2" />
           </div>
-        </div>
 
-        <!-- <div class="playerDiv" player="1">
-          <InputText
-            player="1"
-            label="Player 2"
-            @change="setStreamKey(1, this.value)"></InputText>
-          <Select
-            class="server"
-            player="1"
-            label="Server"
-            @change="setServer(1, this.value)"></Select>
-          <Button
-            player="1"
-            id="refresh"
-            @click="
-              nodecg.sendMessage('restartMedia', activeRunners.value[1].source)
-            ">
-            <span class="material-icons">refresh</span>
-          </Button>
-          <Button
-            player="1"
-            id="cam"
-            @click="activeRunners.value[1].cam = !activeRunners.value[1].cam">
-            <span class="material-icons">videocam_off</span>
-          </Button>
-        </div>
-        <div class="playerDiv" player="2">
-          <InputText
-            player="2"
-            label="Player 3"
-            @change="setStreamKey(2, this.value)"></InputText>
-          <Select
-            class="server"
-            player="2"
-            label="Server"
-            @change="setServer(2, this.value)"></Select>
-          <Button
-            player="2"
-            id="refresh"
-            @click="
-              nodecg.sendMessage('restartMedia', activeRunners.value[2].source)
-            ">
-            <span class="material-icons">refresh</span>
-          </Button>
-          <Button
-            player="2"
-            id="cam"
-            @click="activeRunners.value[2].cam = !activeRunners.value[2].cam">
-            <span class="material-icons">videocam_off</span>
-          </Button>
-        </div>
-        <div class="playerDiv" player="3">
-          <InputText
-            player="3"
-            label="Player 4"
-            @change="setStreamKey(3, this.value)"></InputText>
-          <Select
-            class="server"
-            player="3"
-            label="Server"
-            @change="setServer(3, this.value)"></Select>
-          <Button
-            player="3"
-            id="refresh"
-            @click="
-              nodecg.sendMessage('restartMedia', activeRunners.value[3].source)
-            ">
-            <span class="material-icons">refresh</span>
-          </Button>
-          <Button
-            player="3"
-            id="cam"
-            @click="activeRunners.value[3].cam = !activeRunners.value[3].cam">
-            <span class="material-icons">videocam_off</span>
-          </Button>
-        </div> -->
       </template>
     </Card>
     <!-- <Button id="adPlayer" label="Start Ad" @click="startAd"></Button> -->

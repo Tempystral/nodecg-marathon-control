@@ -104,19 +104,23 @@ obs.on("SceneTransitionStarted", transition);
 async function transition() {
   obsStatus.value.inTransition = true;
   let shouldRecord = false;
-
+  // I think this is a race condition but
+  // it does consistently catch the pre-transition scenes
+  // So this effectively says whether we're going INTO an intermission
   if (previewIsIntermission()) {
+    // If the next scene is an intermission
     obsStatus.value.inIntermission = true;
     if (
       settings.value.autoRecord &&
       obsStatus.value.recording &&
       !obsStatus.value.emergencyTransition
-    )
-      await send("StopRecord");
+    ) // and if we're currently recording and not performing an emergency transition
+      await send("StopRecord"); // Then stop
   }
-  if (!previewIsIntermission()) {
-    shouldRecord = true;
-    obsStatus.value.emergencyTransition = false;
+  else {
+    // Scene switching to is not an intermission scene
+    shouldRecord = true; // We should record
+    obsStatus.value.emergencyTransition = false; // Reset emergency status
   }
 
   obs.once("SceneTransitionEnded", async () => {
