@@ -14,11 +14,22 @@ import FloatLabel from "primevue/floatlabel";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { NAMESPACE } from "../utils";
+import { RunDataArray } from "speedcontrol-util/types";
+import { computed } from "vue";
 
 const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
 
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
+
+const allRuns = useReplicant<RunDataArray>("runDataArray", "nodecg-speedcontrol");
+const surrounding = useReplicant<{
+	previous?: string;
+	current?: string;
+	next?: string;
+}>("runDataActiveRunSurrounding", "nodecg-speedcontrol");
+
+const nextRun = computed(() => allRuns.data?.find(r => r.id === surrounding.data?.next))
 
 const servers = [
   { name: "US West", value: "usw" },
@@ -109,9 +120,56 @@ function isRunnerLive() {
               </div>
             <hr v-if="i < activeRunners.data.length - 1" class="mt-2 mr-2 ml-2" />
           </div>
-
       </template>
     </Card>
+
+    <Card id="runnerInfo" v-if="activeRunners.data">
+      <template #title> Next Runner's Info </template>
+      <template #content>
+        <div v-if="nextRun" class="flex gap-1 mt-2">
+        <FloatLabel variant="on">
+          <InputText
+            v-model="nextRun.teams[0].players[0].social.twitch"
+            disabled
+            :label-id="`player-next-stream-key`"
+            fluid />
+          <label :for="`player-next-stream-key`">
+            Next Player Stream Key
+          </label>
+        </FloatLabel>
+        <FloatLabel variant="on" >
+          <Select
+            v-model="nextRun.teams[0].players[0].customData.server"
+            :options="servers"
+            option-label="name"
+            option-value="value"
+            default-value="use"
+            fluid
+            :label-id="`player-next-server`"></Select>
+          <label :for="`player-next-server`">
+            View from server:
+          </label>
+        </FloatLabel>
+        
+        <Button
+          :id="`player-next-open`"
+          severity="info"
+          
+          variant="text"
+          @click="() => openStream({
+            server: nextRun?.teams[0].players[0].customData.server ?? 'use',
+            streamKey: nextRun?.teams[0].players[0].social.twitch ?? '',
+            cam: false,
+            source: '' })"
+          >
+          <template #icon>
+            <svg-icon type="mdi" :path="mdiOpenInNew" />
+          </template>
+        </Button>
+      </div>
+    </template>
+  </Card>
 </template>
+
 
 <style></style>

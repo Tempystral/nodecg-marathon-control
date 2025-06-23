@@ -35,14 +35,17 @@ const recordIconStyle = computed(() =>
 );
 </script>
 <template>
-  <div class="flex items-center justify-around w-full gap-2">
-    <iframe
-      v-if="settings.data"
-      id="preview"
-      frameBorder="0"
-      allow="autoplay"
-      class="h-60 aspect-video t-2"
-      :src="`https://vdo.ninja/?view=${settings.data.previewCode}&autostart&cleanish&transparent&mute`"></iframe>
+  <div class="flex items-center justify-around w-full gap-2 -mb-2">
+    <div class="flex flex-col items-center">
+      <iframe
+        v-if="settings.data"
+        id="preview"
+        frameBorder="0"
+        allow="autoplay"
+        class="h-60 aspect-video t-2"
+        :src="`https://vdo.ninja/?view=${settings.data.previewCode}&autostart&cleanish&transparent&mute`"></iframe>
+      <p class="text-xl">Preview</p>
+    </div>
     <div id="transitionDiv" class="flex flex-col items-center gap-2">
       <div id="streamStatus" class="flex gap-2">
         <SvgIcon
@@ -83,13 +86,16 @@ const recordIconStyle = computed(() =>
         </Button>
       </div>
     </div>
-    <iframe
-      v-if="settings.data"
-      id="program"
-      frameBorder="0"
-      allow="autoplay"
-      class="h-60 aspect-video"
-      :src="`https://vdo.ninja/?view=${settings.data.programCode}&autostart&cleanish&transparent&mute`"></iframe>
+    <div class="flex flex-col items-center">
+      <iframe
+        v-if="settings.data"
+        id="program"
+        frameBorder="0"
+        allow="autoplay"
+        class="h-60 aspect-video"
+        :src="`https://vdo.ninja/?view=${settings.data.programCode}&autostart&cleanish&transparent&mute`"></iframe>
+      <p class="text-xl">Program</p>
+    </div>
   </div>
 </template>
 <style></style>

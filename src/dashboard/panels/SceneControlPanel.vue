@@ -1,26 +1,14 @@
 <script setup lang="ts">
-import SvgIcon from "@jamescoyle/vue-icon";
-import { mdiOpenInNew, mdiRefresh } from "@mdi/js";
 import {
-  ActiveRunners,
   OBSStatus,
   SettingsReplicant
 } from "@nmc/types";
 import { useReplicant } from "nodecg-vue-composable";
-import Button from "primevue/button";
-import Card from "primevue/card";
-import FloatLabel from "primevue/floatlabel";
-import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { onMounted, ref, watch } from "vue";
 import { NAMESPACE } from "../utils";
-import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
-import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 import StreamInfoPanel from "./StreamInfoPanel.vue";
 
-const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
-
-const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const sceneList = useReplicant<string[]>("sceneList", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
 const settings = useReplicant<SettingsReplicant>("settings", undefined);
