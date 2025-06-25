@@ -16,7 +16,7 @@ const settings = useReplicant<SettingsReplicant>("settings", undefined);
 const previewScene = ref("");
 
 onMounted(() => {
-  previewScene.value = settings.data?.defaultScene ?? "";
+  previewScene.value = "";
 })
 
 watch(previewScene, (newVal, oldVal) => {
