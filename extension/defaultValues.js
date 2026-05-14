@@ -65,7 +65,8 @@ exports.botSettings = {
 exports.settings = {
     previewCode: "",
     programCode: "",
-    intermissionScene: "",
+    intermissionScenes: [],
+    defaultScene: "",
     autoRecord: false,
     autoSetLayout: false,
     autoSetRunners: false,

@@ -1,87 +1,91 @@
 {
-  "_index-28by1BTk.js": {
-    "file": "assets/index-28by1BTk.js",
+  "_index-BI2AFnm0.js": {
+    "file": "assets/index-BI2AFnm0.js",
     "name": "index",
     "imports": [
-      "src/dashboard/template.ts",
-      "_index-DJxXUJNO.js"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js",
+      "_index-Br38dIx3.js",
+      "_index-IpOL6AyI.js",
+      "_index-DwUCXEzz.js"
     ]
   },
-  "_index-A5y_NuqA.js": {
-    "file": "assets/index-A5y_NuqA.js",
+  "_index-BL-0uvxS.css": {
+    "file": "assets/index-BL-0uvxS.css",
+    "src": "_index-BL-0uvxS.css"
+  },
+  "_index-Br38dIx3.js": {
+    "file": "assets/index-Br38dIx3.js",
     "name": "index",
     "imports": [
-      "src/dashboard/template.ts"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js"
     ]
   },
-  "_index-B6doOSCe.js": {
-    "file": "assets/index-B6doOSCe.js",
+  "_index-Cty0n1-r.js": {
+    "file": "assets/index-Cty0n1-r.js",
     "name": "index",
     "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js"
     ]
   },
-  "_index-D7TTBSFy.js": {
-    "file": "assets/index-D7TTBSFy.js",
+  "_index-DGLLtXUx.js": {
+    "file": "assets/index-DGLLtXUx.js",
     "name": "index",
     "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts"
+      "_index-DpoPfRn0.js"
     ]
   },
-  "_index-D9ub092A.js": {
-    "file": "assets/index-D9ub092A.js",
+  "_index-DbrQZFbN.js": {
+    "file": "assets/index-DbrQZFbN.js",
     "name": "index",
     "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts",
-      "_index-him3MSMG.js",
-      "_index-28by1BTk.js"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js",
+      "_index-Br38dIx3.js",
+      "_index-DwUCXEzz.js"
     ]
   },
-  "_index-DJxXUJNO.js": {
-    "file": "assets/index-DJxXUJNO.js",
+  "_index-DpoPfRn0.js": {
+    "file": "assets/index-DpoPfRn0.js",
+    "name": "index",
+    "css": [
+      "assets/index-BL-0uvxS.css"
+    ]
+  },
+  "_index-DwUCXEzz.js": {
+    "file": "assets/index-DwUCXEzz.js",
     "name": "index",
     "imports": [
-      "src/dashboard/template.ts"
+      "_index-DpoPfRn0.js",
+      "_index-DGLLtXUx.js"
     ]
   },
-  "_index-DgPp2w3v.js": {
-    "file": "assets/index-DgPp2w3v.js",
+  "_index-IpOL6AyI.js": {
+    "file": "assets/index-IpOL6AyI.js",
     "name": "index",
     "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts",
-      "_index-D7TTBSFy.js",
-      "_index-28by1BTk.js"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js",
+      "_index-DwUCXEzz.js"
     ]
   },
-  "_index-NSIrh0GP.js": {
-    "file": "assets/index-NSIrh0GP.js",
+  "_index-d4Ub4BP1.js": {
+    "file": "assets/index-d4Ub4BP1.js",
     "name": "index",
     "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts",
-      "_index-D7TTBSFy.js",
-      "_index-him3MSMG.js",
-      "_index-28by1BTk.js"
+      "_index-DGLLtXUx.js",
+      "_index-DpoPfRn0.js",
+      "_index-IpOL6AyI.js",
+      "_index-DwUCXEzz.js"
     ]
   },
-  "_index-him3MSMG.js": {
-    "file": "assets/index-him3MSMG.js",
-    "name": "index",
-    "imports": [
-      "_index-DJxXUJNO.js",
-      "src/dashboard/template.ts",
-      "_index-28by1BTk.js"
-    ]
-  },
-  "_mdi-B7zLa8-8.js": {
-    "file": "assets/mdi-B7zLa8-8.js",
+  "_mdi-BMOFOXDQ.js": {
+    "file": "assets/mdi-BMOFOXDQ.js",
     "name": "mdi",
     "imports": [
-      "src/dashboard/template.ts"
+      "_index-DpoPfRn0.js"
     ],
     "css": [
       "assets/mdi-CMfq2Mr9.css"
@@ -92,18 +96,17 @@
     "src": "_mdi-CMfq2Mr9.css"
   },
   "src/dashboard/audioPanel.ts": {
-    "file": "assets/audioPanel-CvEEqmp1.js",
+    "file": "assets/audioPanel-C__5iec3.js",
     "name": "audioPanel",
     "src": "src/dashboard/audioPanel.ts",
     "isEntry": true,
     "imports": [
-      "src/dashboard/template.ts",
-      "_mdi-B7zLa8-8.js",
-      "_index-A5y_NuqA.js",
-      "_index-DJxXUJNO.js",
-      "_index-him3MSMG.js",
-      "_index-D9ub092A.js",
-      "_index-28by1BTk.js",
+      "_index-DpoPfRn0.js",
+      "_mdi-BMOFOXDQ.js",
+      "_index-DGLLtXUx.js",
+      "_index-IpOL6AyI.js",
+      "_index-d4Ub4BP1.js",
+      "_index-DwUCXEzz.js",
       "src/dashboard/utils.ts"
     ],
     "css": [
@@ -111,92 +114,79 @@
     ]
   },
   "src/dashboard/autoRecordSettings.ts": {
-    "file": "assets/autoRecordSettings-BAxs-2rr.js",
+    "file": "assets/autoRecordSettings-DSHnzXRu.js",
     "name": "autoRecordSettings",
     "src": "src/dashboard/autoRecordSettings.ts",
     "isEntry": true,
     "imports": [
-      "src/dashboard/template.ts",
-      "_index-A5y_NuqA.js",
-      "_index-DJxXUJNO.js",
-      "_index-him3MSMG.js",
+      "_index-DpoPfRn0.js",
+      "_index-DGLLtXUx.js",
+      "_index-IpOL6AyI.js",
       "src/dashboard/utils.ts",
-      "_index-NSIrh0GP.js",
-      "_index-D9ub092A.js",
-      "_index-D7TTBSFy.js",
-      "_index-DgPp2w3v.js",
-      "_index-28by1BTk.js"
+      "_index-BI2AFnm0.js",
+      "_index-d4Ub4BP1.js",
+      "_index-Br38dIx3.js",
+      "_index-DbrQZFbN.js",
+      "_index-DwUCXEzz.js"
     ]
   },
   "src/dashboard/checklist.ts": {
-    "file": "assets/checklist-D0c1UI0Q.js",
+    "file": "assets/checklist-BO5uMwiW.js",
     "name": "checklist",
     "src": "src/dashboard/checklist.ts",
     "isEntry": true,
     "imports": [
-      "_index-A5y_NuqA.js",
+      "_index-DpoPfRn0.js",
       "src/dashboard/utils.ts",
-      "_index-DgPp2w3v.js",
-      "_index-DJxXUJNO.js",
-      "_index-B6doOSCe.js",
-      "src/dashboard/template.ts",
-      "_index-D7TTBSFy.js",
-      "_index-28by1BTk.js"
+      "_index-DbrQZFbN.js",
+      "_index-DGLLtXUx.js",
+      "_index-Cty0n1-r.js",
+      "_index-Br38dIx3.js",
+      "_index-DwUCXEzz.js"
     ]
   },
   "src/dashboard/obsSettings.ts": {
-    "file": "assets/obsSettings-AWe8f5Dx.js",
+    "file": "assets/obsSettings-C3Jj5AVG.js",
     "name": "obsSettings",
     "src": "src/dashboard/obsSettings.ts",
     "isEntry": true,
     "imports": [
-      "_index-A5y_NuqA.js",
-      "_index-DJxXUJNO.js",
-      "_index-him3MSMG.js",
-      "_index-NSIrh0GP.js",
-      "src/dashboard/template.ts",
-      "_index-28by1BTk.js",
-      "_index-D7TTBSFy.js"
+      "_index-DpoPfRn0.js",
+      "_index-DGLLtXUx.js",
+      "_index-IpOL6AyI.js",
+      "_index-Br38dIx3.js",
+      "_index-BI2AFnm0.js",
+      "_index-DbrQZFbN.js",
+      "_index-DwUCXEzz.js"
     ]
   },
   "src/dashboard/sceneControl.ts": {
-    "file": "assets/sceneControl-BI2XM4r5.js",
+    "file": "assets/sceneControl-Cofc8IcW.js",
     "name": "sceneControl",
     "src": "src/dashboard/sceneControl.ts",
     "isEntry": true,
     "imports": [
-      "src/dashboard/template.ts",
-      "_mdi-B7zLa8-8.js",
-      "_index-A5y_NuqA.js",
-      "_index-DJxXUJNO.js",
-      "_index-B6doOSCe.js",
-      "_index-him3MSMG.js",
-      "_index-NSIrh0GP.js",
+      "_index-DpoPfRn0.js",
+      "_index-BI2AFnm0.js",
       "src/dashboard/utils.ts",
-      "_index-28by1BTk.js",
-      "_index-D7TTBSFy.js"
+      "_mdi-BMOFOXDQ.js",
+      "_index-DGLLtXUx.js",
+      "_index-Cty0n1-r.js",
+      "_index-IpOL6AyI.js",
+      "_index-Br38dIx3.js",
+      "_index-DwUCXEzz.js"
     ]
   },
   "src/dashboard/stats.ts": {
-    "file": "assets/stats-DZ4Wfp3E.js",
+    "file": "assets/stats-B0MTP4tH.js",
     "name": "stats",
     "src": "src/dashboard/stats.ts",
     "isEntry": true,
     "imports": [
-      "_index-A5y_NuqA.js",
-      "src/dashboard/template.ts"
+      "_index-DpoPfRn0.js"
     ],
     "css": [
       "assets/stats-CL6Y2qBz.css"
-    ]
-  },
-  "src/dashboard/template.ts": {
-    "file": "assets/template-D9kpmXwZ.js",
-    "name": "template",
-    "src": "src/dashboard/template.ts",
-    "isEntry": true,
-    "css": [
-      "assets/template-B62rfibl.css"
     ]
   },
   "src/dashboard/utils.ts": {
@@ -206,15 +196,14 @@
     "isEntry": true
   },
   "src/dashboard/videoMonitor.ts": {
-    "file": "assets/videoMonitor-CGIEd6zV.js",
+    "file": "assets/videoMonitor-C7Xvt55m.js",
     "name": "videoMonitor",
     "src": "src/dashboard/videoMonitor.ts",
     "isEntry": true,
     "imports": [
-      "src/dashboard/template.ts",
-      "_mdi-B7zLa8-8.js",
-      "_index-A5y_NuqA.js",
-      "_index-DJxXUJNO.js",
+      "_index-DpoPfRn0.js",
+      "_mdi-BMOFOXDQ.js",
+      "_index-DGLLtXUx.js",
       "src/dashboard/utils.ts"
     ]
   }
