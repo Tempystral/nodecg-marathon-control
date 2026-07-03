@@ -3,7 +3,7 @@ import {
   AdPlayerData,
   StreamSyncData,
 } from "@nmc/types";
-import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
+
 import { useReplicant } from "nodecg-vue-composable";
 import { NAMESPACE } from "../utils";
 import Checkbox from "primevue/checkbox";
@@ -11,10 +11,11 @@ import Button from "primevue/button";
 import Card from "primevue/card";
 import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
 import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
+import NodeCG from "nodecg/types";
 
 const checklist = useReplicant<ChecklistData>("checklist", NAMESPACE);
 
-const bundleConfig = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
+const bundleConfig = (nodecg as NodeCG.ClientAPI<ServerConfig>).bundleConfig;
 
 /* 
 streamSync.on("change", (newVal) => {

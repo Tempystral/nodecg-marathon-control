@@ -6,7 +6,7 @@ import {
   OBSStatus
 } from "@nmc/types";
 import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
-import { NodeCGAPIClient } from "node_modules/nodecg/out/client/api/api.client";
+import  NodeCG  from "nodecg/types";
 import { useReplicant, ReactiveReplicant } from "nodecg-vue-composable";
 import Button from "primevue/button";
 import Card from "primevue/card";
@@ -17,7 +17,7 @@ import { NAMESPACE } from "../utils";
 import { RunDataArray } from "speedcontrol-util/types";
 import { computed } from "vue";
 
-const { rtmp } = (nodecg as NodeCGAPIClient<ServerConfig>).bundleConfig;
+const { rtmp } = (nodecg as NodeCG.ClientAPI<ServerConfig>).bundleConfig;
 
 const activeRunners = useReplicant<ActiveRunners[]>("activeRunners", NAMESPACE);
 const obsStatus = useReplicant<OBSStatus>("obsStatus", NAMESPACE);
