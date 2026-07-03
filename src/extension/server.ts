@@ -1,9 +1,8 @@
-import path from "path";
-
 import { OBSStatus } from "@nmc/types";
 import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValues from "./defaultValues";
-import * as obs from "./obs";
+import * as obs from "./obs/websocket";
+import { useNodeCGRouter } from "./router";
 import { get } from "./util/nodecg";
 import {
   activeRunners,
@@ -18,40 +17,13 @@ import {
   timer,
 } from "./util/replicants";
 import { useWebsocketServer } from "./websocketServer";
+import { setPlayerURL } from "./obs";
 
 const nodecg = get();
-const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
 
 const { wsPath, upgradeServer } = useWebsocketServer();
-
-let isUpgraded = false;
-// const delayArray = {};
-
-if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
-  nodecg.log.error(
-    `OBS Websocket address has not been defined!
-      Please add the IP address and port in the config.`,
-  );
-  process.exit(1);
-
-  /* gracefulExit(); */ // IDK what this is
-}
-
-// Set up delay page.
-const app = nodecg.Router();
-app.get("/delay", (req, res) =>
-  res.sendFile(path.join(__dirname, "../graphics/delay.html")),
-);
-
-app.get(`${wsPath}/start`, (req, res) => {
-  if (!isUpgraded) {
-    upgradeServer(req.socket);
-    isUpgraded = true;
-  }
-  res.sendStatus(200);
-});
-
-nodecg.mount(app);
+const { upgrade } = useNodeCGRouter(nodecg);
+upgrade(wsPath, upgradeServer);
 
 // Start DACBot.
 if (botSettings.value.active) {
@@ -153,7 +125,7 @@ activeRunners.on("change", (newVal, oldVal) => {
   if (newVal && newVal != oldVal) {
     newVal.forEach(async (player, i) => {
       if (player.streamKey && player.server) {
-        await obs.setPlayerURL(i, player);
+        await setPlayerURL(i, player);
       }
     });
   }
@@ -198,7 +170,6 @@ checklist.on("change", (newVal) => {
   if (!newVal.completed) {
     let item: keyof typeof newVal.items;
     for (item in newVal.items) {
-      
       if (newVal.items[item] === false) {
         checklist.value.completed = false;
         return;
