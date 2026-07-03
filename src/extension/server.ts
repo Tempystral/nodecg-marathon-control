@@ -1,15 +1,15 @@
-import path from "path";
-
 import { OBSStatus } from "@nmc/types";
-import { RunData, RunDataTeam } from "speedcontrol-util/types/speedcontrol";
+import { RunData } from "speedcontrol-util/types/speedcontrol";
 import * as defaultValues from "./defaultValues";
-import * as obs from "./obs";
+import { resetStreamKeys, updateStreamKeys } from "./obs/players";
+import { setPlayerURL } from "./obs/sources";
+import * as obs from "./obs/websocket";
+import { useNodeCGRouter } from "./router";
 import { get } from "./util/nodecg";
 import {
   activeRunners,
   adPlayer,
   autoRecord,
-  botSettings,
   checklist,
   obsStatus,
   runDataActiveRun,
@@ -20,51 +20,25 @@ import {
 import { useWebsocketServer } from "./websocketServer";
 
 const nodecg = get();
-const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
+const viewer = nodecg.bundleConfig.rtmp.viewer;
 
 const { wsPath, upgradeServer } = useWebsocketServer();
+const { upgrade } = useNodeCGRouter(nodecg);
+upgrade(wsPath, upgradeServer);
 
-let isUpgraded = false;
-// const delayArray = {};
-
-if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
-  nodecg.log.error(
-    `OBS Websocket address has not been defined!
-      Please add the IP address and port in the config.`,
-  );
-  process.exit(1);
-
-  /* gracefulExit(); */ // IDK what this is
-}
-
-// Set up delay page.
-const app = nodecg.Router();
-app.get("/delay", (req, res) =>
-  res.sendFile(path.join(__dirname, "../graphics/delay.html")),
-);
-
-app.get(`${wsPath}/start`, (req, res) => {
-  if (!isUpgraded) {
-    upgradeServer(req.socket);
-    isUpgraded = true;
-  }
-  res.sendStatus(200);
-});
-
-nodecg.mount(app);
-
-// Start DACBot.
+// DACBot is currently disabled as it has not proven useful for my purposes
+/* // Start DACBot
 if (botSettings.value.active) {
   switch (nodecg.bundleConfig.botToken) {
     case "":
       nodecg.log.warn("No bot token has been provided!");
       break;
     default:
-      /* DACBot.start(nodecg, wsServer.bot); */
+      // DACBot.start(nodecg, wsServer.bot);
       // No clue what this is either
       break;
   }
-}
+} */
 
 // Listen for requests from clients.
 nodecg.listenFor("setPreviewScene", (value) =>
@@ -98,31 +72,13 @@ nodecg.listenFor("restartMedia", (value) =>
 );
 nodecg.listenFor("refreshVideoSource", refreshVideoSource);
 
-/* TODO: Low priority */
+/* TODO: This can be enabled and fixed if you want to use the ad player.
+I however do not care and have disabled it. */
 //nodecg.listenFor("startAd", () => playAds());
 
 /* nodecg.listenFor("returnDelay", (value) =>
   syncStreams(value, streamSync.value),
 ); */
-
-function resetStreamKeys() {
-  for (let j = 0; j < activeRunners.value.length; j++) {
-    activeRunners.value[j].streamKey = null;
-  }
-}
-
-function updateStreamKeys(teams: RunDataTeam[]) {
-  try {
-    resetStreamKeys();
-    teams.forEach((team) => {
-      team.players.forEach(async (player, i) => {
-        activeRunners.value[i].streamKey = player.social.twitch ?? player.name;
-      });
-    });
-  } catch (e) {
-    nodecg.log.error(e);
-  }
-}
 
 runDataActiveRun.on("change", (newVal, oldVal) => {
   nodecg.log.debug("onChange - runDataActiveRun");
@@ -132,7 +88,11 @@ runDataActiveRun.on("change", (newVal, oldVal) => {
   }
   if (newVal.id !== oldVal?.id) {
     if (settings.value.autoSetRunners) {
-      updateStreamKeys(newVal.teams);
+      try {
+        updateStreamKeys(newVal.teams);
+      } catch (e) {
+        nodecg.log.error(e);
+      }
     }
     if (
       settings.value.autoSetLayout &&
@@ -153,11 +113,18 @@ activeRunners.on("change", (newVal, oldVal) => {
   if (newVal && newVal != oldVal) {
     newVal.forEach(async (player, i) => {
       if (player.streamKey && player.server) {
-        await obs.setPlayerURL(i, player);
+        await setPlayerURL(
+          i,
+          buildViewerUrl(player.streamKey, viewer.url, viewer.token),
+        );
       }
     });
   }
 });
+
+function buildViewerUrl(streamKey: string, url: string, token: string) {
+  return `${url}/live/key/${streamKey}?token=${token}&region=use`;
+}
 
 obsStatus.on("change", onStatusChange);
 
@@ -198,7 +165,6 @@ checklist.on("change", (newVal) => {
   if (!newVal.completed) {
     let item: keyof typeof newVal.items;
     for (item in newVal.items) {
-      
       if (newVal.items[item] === false) {
         checklist.value.completed = false;
         return;

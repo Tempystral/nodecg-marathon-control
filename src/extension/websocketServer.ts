@@ -1,3 +1,5 @@
+import { ServerConfig } from "@nmc/types/schemas/ServerConfig";
+import NodeCG from "@nodecg/types";
 import { Socket } from "net";
 import WebSocket, { WebSocketServer } from "ws";
 
@@ -38,4 +40,16 @@ export function useWebsocketServer() {
   });
 
   return { wsServer, upgradeServer, wsPath, clients };
+}
+
+export function loadWebsocketParams(nodecg: NodeCG.ServerAPI<ServerConfig>) {
+  const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
+  if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
+    nodecg.log.error(
+      `OBS Websocket address has not been defined!
+      Please add the IP address and port in the config.`,
+    );
+    process.exit(1);
+  }
+  return { wsIp, wsPort };
 }

@@ -1,4 +1,4 @@
-import { ActiveRunners,  OBSStats, SettingsReplicant } from "@nmc/types";
+import { ActiveRunners, OBSStats, SettingsReplicant } from "@nmc/types";
 import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 export const audioSourceTypes = [
@@ -11,7 +11,7 @@ export const audioSourceTypes = [
   "vlc_source",
 ];
 
-export const activeRunners : ActiveRunners[] = [
+export const activeRunners: ActiveRunners[] = [
   {
     source: null,
     streamKey: null,
@@ -104,7 +104,18 @@ export const stats: OBSStats = {
   uptime: "00:00:00",
 };
 
-export const checklist : ChecklistData = {
+export const streamData = {
+  outputActive: false,
+  outputBytes: 0,
+  outputCongestion: 0,
+  outputDuration: 0,
+  outputReconnecting: false,
+  outputSkippedFrames: 0,
+  outputTimecode: "",
+  outputTotalFrames: 0,
+};
+
+export const checklist: ChecklistData = {
   started: false,
   completed: false,
   items: {
@@ -112,8 +123,8 @@ export const checklist : ChecklistData = {
     checkAudio: false,
     checkInfo: false,
     checkReady: false,
-    finalCheck: false
-  }
+    finalCheck: false,
+  },
 };
 
 export const adPlayer = {

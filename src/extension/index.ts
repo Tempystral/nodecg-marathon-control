@@ -14,7 +14,8 @@ export default (nodecg: NodeCG.ServerAPI<ServerConfig>): void => {
    * things to be loaded *after* the NodeCG context is set.
    */
   set(nodecg);
+  require("./obs-events");
   require("./server");
-  require("./obs");
+
   //require("./util/replicants");
 };
