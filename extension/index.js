@@ -11,7 +11,7 @@ exports.default = (nodecg) => {
      * things to be loaded *after* the NodeCG context is set.
      */
     (0, nodecg_1.set)(nodecg);
+    require("./obs-events");
     require("./server");
-    require("./obs");
     //require("./util/replicants");
 };

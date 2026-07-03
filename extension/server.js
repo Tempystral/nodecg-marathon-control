@@ -32,50 +32,33 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const path_1 = __importDefault(require("path"));
 const defaultValues = __importStar(require("./defaultValues"));
-const obs = __importStar(require("./obs"));
+const players_1 = require("./obs/players");
+const sources_1 = require("./obs/sources");
+const obs = __importStar(require("./obs/websocket"));
+const router_1 = require("./router");
 const nodecg_1 = require("./util/nodecg");
 const replicants_1 = require("./util/replicants");
 const websocketServer_1 = require("./websocketServer");
 const nodecg = (0, nodecg_1.get)();
-const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
+const viewer = nodecg.bundleConfig.rtmp.viewer;
 const { wsPath, upgradeServer } = (0, websocketServer_1.useWebsocketServer)();
-let isUpgraded = false;
-// const delayArray = {};
-if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
-    nodecg.log.error(`OBS Websocket address has not been defined!
-      Please add the IP address and port in the config.`);
-    process.exit(1);
-    /* gracefulExit(); */ // IDK what this is
-}
-// Set up delay page.
-const app = nodecg.Router();
-app.get("/delay", (req, res) => res.sendFile(path_1.default.join(__dirname, "../graphics/delay.html")));
-app.get(`${wsPath}/start`, (req, res) => {
-    if (!isUpgraded) {
-        upgradeServer(req.socket);
-        isUpgraded = true;
-    }
-    res.sendStatus(200);
-});
-nodecg.mount(app);
-// Start DACBot.
-if (replicants_1.botSettings.value.active) {
-    switch (nodecg.bundleConfig.botToken) {
-        case "":
-            nodecg.log.warn("No bot token has been provided!");
-            break;
-        default:
-            /* DACBot.start(nodecg, wsServer.bot); */
-            // No clue what this is either
-            break;
-    }
-}
+const { upgrade } = (0, router_1.useNodeCGRouter)(nodecg);
+upgrade(wsPath, upgradeServer);
+// DACBot is currently disabled as it has not proven useful for my purposes
+/* // Start DACBot
+if (botSettings.value.active) {
+  switch (nodecg.bundleConfig.botToken) {
+    case "":
+      nodecg.log.warn("No bot token has been provided!");
+      break;
+    default:
+      // DACBot.start(nodecg, wsServer.bot);
+      // No clue what this is either
+      break;
+  }
+} */
 // Listen for requests from clients.
 nodecg.listenFor("setPreviewScene", (value) => obs.send("SetCurrentPreviewScene", { sceneName: value }));
 nodecg.listenFor("startTransition", () => obs.send("TriggerStudioModeTransition"));
@@ -95,38 +78,26 @@ nodecg.listenFor("restartMedia", (value) => obs.send("PressInputPropertiesButton
     propertyName: "refreshnocache",
 }));
 nodecg.listenFor("refreshVideoSource", refreshVideoSource);
-/* TODO: Low priority */
+/* TODO: This can be enabled and fixed if you want to use the ad player.
+I however do not care and have disabled it. */
 //nodecg.listenFor("startAd", () => playAds());
 /* nodecg.listenFor("returnDelay", (value) =>
   syncStreams(value, streamSync.value),
 ); */
-function resetStreamKeys() {
-    for (let j = 0; j < replicants_1.activeRunners.value.length; j++) {
-        replicants_1.activeRunners.value[j].streamKey = null;
-    }
-}
-function updateStreamKeys(teams) {
-    try {
-        resetStreamKeys();
-        teams.forEach((team) => {
-            team.players.forEach(async (player, i) => {
-                replicants_1.activeRunners.value[i].streamKey = player.social.twitch ?? player.name;
-            });
-        });
-    }
-    catch (e) {
-        nodecg.log.error(e);
-    }
-}
 replicants_1.runDataActiveRun.on("change", (newVal, oldVal) => {
     nodecg.log.debug("onChange - runDataActiveRun");
     if (!newVal) {
-        resetStreamKeys();
+        (0, players_1.resetStreamKeys)();
         return;
     }
     if (newVal.id !== oldVal?.id) {
         if (replicants_1.settings.value.autoSetRunners) {
-            updateStreamKeys(newVal.teams);
+            try {
+                (0, players_1.updateStreamKeys)(newVal.teams);
+            }
+            catch (e) {
+                nodecg.log.error(e);
+            }
         }
         if (replicants_1.settings.value.autoSetLayout &&
             newVal.customData !== undefined &&
@@ -145,11 +116,14 @@ replicants_1.activeRunners.on("change", (newVal, oldVal) => {
     if (newVal && newVal != oldVal) {
         newVal.forEach(async (player, i) => {
             if (player.streamKey && player.server) {
-                await obs.setPlayerURL(i, player);
+                await (0, sources_1.setPlayerURL)(i, buildViewerUrl(player.streamKey, viewer.url, viewer.token));
             }
         });
     }
 });
+function buildViewerUrl(streamKey, url, token) {
+    return `${url}/live/key/${streamKey}?token=${token}&region=use`;
+}
 replicants_1.obsStatus.on("change", onStatusChange);
 async function onStatusChange(newVal, oldVal) {
     if (!oldVal || !newVal) {

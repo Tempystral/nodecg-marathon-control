@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useWebsocketServer = useWebsocketServer;
+exports.loadWebsocketParams = loadWebsocketParams;
 const ws_1 = require("ws");
 function useWebsocketServer() {
     const wsPath = "/bundles/nodecg-marathon-control/ws";
@@ -30,4 +31,13 @@ function useWebsocketServer() {
         }
     });
     return { wsServer, upgradeServer, wsPath, clients };
+}
+function loadWebsocketParams(nodecg) {
+    const { ip: wsIp, port: wsPort } = nodecg.bundleConfig.websocket;
+    if (!wsIp || wsIp === "" || !wsPort || wsPort === "") {
+        nodecg.log.error(`OBS Websocket address has not been defined!
+      Please add the IP address and port in the config.`);
+        process.exit(1);
+    }
+    return { wsIp, wsPort };
 }
