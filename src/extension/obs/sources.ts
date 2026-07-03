@@ -1,6 +1,6 @@
+import { audioSourceTypes } from "@nmc/defaultValues";
 import { OBSResponseTypes } from "obs-websocket-js";
 import { send } from "./websocket";
-import { audioSourceTypes } from "@nmc/defaultValues";
 
 type SourceSettings = OBSResponseTypes["GetInputSettings"];
 type InputType = OBSResponseTypes["GetInputList"]["inputs"][0];
@@ -28,8 +28,21 @@ function filterInputKind(input: InputType) {
   );
 }
 
+async function setPlayerURL(index: number, url: string) {
+  const sourceName = `Player ${index + 1}`;
+  const browserSources = await getBrowserSources();
+  const playerSource = browserSources.find((s) => s.inputName === sourceName);
+  if (playerSource?.inputName) {
+    await setBrowserUrl(sourceName, url);
+  }
+}
+
 async function getInputSettings(inputName: string) {
-  return await send("GetInputSettings", { inputName: inputName });
+  return await send("GetInputSettings", { inputName });
+}
+
+async function setBrowserUrl(inputName: string, url: string) {
+  await send("SetInputSettings", { inputName, inputSettings: { url } });
 }
 
 function hasRerouteAudio(source: SourceSettings) {
@@ -48,4 +61,5 @@ export {
   getInputSettings,
   hasRerouteAudio,
   inputURLContains,
+  setPlayerURL,
 };

@@ -1,7 +1,8 @@
-import { sceneList } from "@nmc/util/replicants";
+import { obsStatus, sceneList } from "@nmc/util/replicants";
 import { send } from "./websocket";
+import { OBSEventTypes } from "obs-websocket-js";
 
-export async function getScenes() {
+export async function updateSceneList() {
   const scenes = await send("GetSceneList");
   const sceneArray = [];
   for (const scene of scenes.scenes) {
@@ -10,4 +11,11 @@ export async function getScenes() {
     }
   }
   sceneList.value = sceneArray;
+}
+
+export function setScene(
+  scene: "preview" | "program",
+  data: OBSEventTypes["CurrentPreviewSceneChanged"],
+) {
+  obsStatus.value[`${scene}Scene`] = data.sceneName;
 }

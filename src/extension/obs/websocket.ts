@@ -1,8 +1,11 @@
+import { get } from "@nmc/util/nodecg";
 import OBSWebSocket, {
+  EventSubscription,
   OBSRequestTypes,
   OBSResponseTypes,
 } from "obs-websocket-js";
 
+const nodecg = get();
 const ws = new OBSWebSocket();
 
 async function send<Type extends keyof OBSRequestTypes>(
@@ -25,4 +28,10 @@ async function send<Type extends keyof OBSRequestTypes>(
   });
 }
 
-export { ws, send };
+function connect(ip: string, port: string, password: string) {
+  return ws.connect(`ws://${ip}:${port}`, password, {
+    eventSubscriptions: EventSubscription.All,
+  });
+}
+
+export { ws, send, connect };
