@@ -12,3 +12,7 @@ export function set(ctx: ServerNodeCG): void {
 export function get(): ServerNodeCG {
   return nodecg;
 }
+
+export function config() {
+  return get().bundleConfig;
+}
