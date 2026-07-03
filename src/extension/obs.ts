@@ -1,24 +1,27 @@
+import { ActiveRunners, AudioSource } from "@nmc/types";
 import { OBSEventTypes, OBSResponseTypes } from "obs-websocket-js";
+import { EventSubscription } from "obs-websocket-js/json";
+import { setIntervalAsync } from "set-interval-async";
+import { ws as obs, send } from "./obs/websocket";
 import { get } from "./util/nodecg";
-import OBSWebSocket, {
-  EventSubscription,
-  OBSRequestTypes,
-} from "obs-websocket-js/json";
 import {
   activeRunners,
   adPlayer,
   audioSources,
   obsStatus,
-  sceneList,
   settings,
   stats,
   streamSync,
 } from "./util/replicants";
-import { ActiveRunners, AudioSource } from "@nmc/types";
-import * as defaultValue from "./defaultValues";
-import { setIntervalAsync } from "set-interval-async";
+import { getScenes } from "./obs/scenes";
+import {
+  getBrowserSources,
+  getInputSettings,
+  hasRerouteAudio,
+  inputURLContains,
+} from "./obs/sources";
 
-const streamHost = "https://lt2025.restream.space";
+const streamHost = "https://lt2026.restream.space";
 const nodecg = get();
 const config = nodecg.bundleConfig.websocket;
 const { viewer } = nodecg.bundleConfig.rtmp;
@@ -27,18 +30,16 @@ nodecg.log.info(
   `Connecting to OBS instance at ws://${config.ip}:${config.port}...`,
 );
 
-const obs = new OBSWebSocket();
-
 obs.once("Identified", () => start(true));
 
-//obs.on('InputVolumeMeters', (data) => console.log(data.inputs[4].inputLevelsMul))
+//ws.on('InputVolumeMeters', (data) => nodecg.log.info(data.inputs[0].inputLevelsMul))
 
 // Listen to OBS events.
 // General events.
 obs.on("ExitStarted", websocketDisconnect);
 obs.on("CurrentSceneCollectionChanged", () => {
   getScenes();
-  getAudioSources();
+  updateAudioSources();
 });
 
 // Scene events.
@@ -56,9 +57,9 @@ function setScene(
 }
 
 // Audio events.
-obs.on("InputCreated", getAudioSources);
-obs.on("InputRemoved", getAudioSources);
-obs.on("InputNameChanged", getAudioSources);
+obs.on("InputCreated", updateAudioSources);
+obs.on("InputRemoved", updateAudioSources);
+obs.on("InputNameChanged", updateAudioSources);
 obs.on("InputVolumeChanged", (data) => {
   const source = findAudioSource(data.inputName);
   if (source) {
@@ -114,10 +115,10 @@ async function transition() {
       settings.value.autoRecord &&
       obsStatus.value.recording &&
       !obsStatus.value.emergencyTransition
-    ) // and if we're currently recording and not performing an emergency transition
+    )
+      // and if we're currently recording and not performing an emergency transition
       await send("StopRecord"); // Then stop
-  }
-  else {
+  } else {
     // Scene switching to is not an intermission scene
     shouldRecord = true; // We should record
     obsStatus.value.emergencyTransition = false; // Reset emergency status
@@ -134,13 +135,14 @@ async function transition() {
 }
 
 function previewIsIntermission() {
-  return settings.value.intermissionScenes.includes(obsStatus.value.previewScene);
+  return settings.value.intermissionScenes.includes(
+    obsStatus.value.previewScene,
+  );
 }
 
 /* function programIsIntermission() {
   return settings.value.intermissionScenes.includes(obsStatus.value.programScene);
 } */
-
 
 // After setting up event hooks, connect
 obs
@@ -154,27 +156,6 @@ obs
     nodecg.log.error(e);
     process.exit(1);
   });
-
-export async function send<Type extends keyof OBSRequestTypes>(
-  request: Type,
-  data?: OBSRequestTypes[Type],
-) {
-  // Return promise with callback
-  return new Promise<OBSResponseTypes[Type]>(async (resolve) => {
-    obs
-      .call<Type>(request, data)
-      .then((result) => resolve(result))
-      .catch((error) => {
-        if (error.code === 600 || !error.code) return;
-        nodecg.log.error("A OBS Websocket error has occurred.\n", {
-          code: error.code,
-          request: request,
-          requestData: data,
-        });
-        return;
-      });
-  });
-}
 
 async function websocketDisconnect() {
   nodecg.log.error(
@@ -221,10 +202,11 @@ async function start(msg: boolean) {
   obsStatus.value = {
     previewScene: previewScene.currentPreviewSceneName,
     programScene: programScene.currentProgramSceneName,
-    inIntermission:
-    settings.value.intermissionScenes.includes(programScene.currentProgramSceneName)
-        ? true
-        : false,
+    inIntermission: settings.value.intermissionScenes.includes(
+      programScene.currentProgramSceneName,
+    )
+      ? true
+      : false,
     inTransition: false,
     emergencyTransition: false,
     streaming: streamStatus.outputActive,
@@ -243,7 +225,7 @@ async function start(msg: boolean) {
   setIntervalAsync(getStats, 2000);
 
   getScenes();
-  getAudioSources();
+  updateAudioSources();
 }
 
 async function getStats() {
@@ -288,50 +270,20 @@ async function getStats() {
   };
 }
 
-async function getScenes() {
-  const scenes = await send("GetSceneList");
-  const sceneArray = [];
-  for (const scene of scenes.scenes) {
-    if (scene.sceneName != null) {
-      sceneArray.push(scene.sceneName.toString());
-    }
-  }
-  sceneList.value = sceneArray;
-}
-
-async function getBrowserSources() {
-  const { inputs } = await send("GetInputList");
-  return inputs.filter(
-    (input) =>
-      input.inputKind &&
-      defaultValue.audioSourceTypes.includes(input.inputKind.toString()) &&
-      input.inputKind.toString() === "browser_source",
-  );
-}
-
-async function getAudioSources() {
+async function updateAudioSources() {
   const audioSourceList: AudioSource[] = [];
   const browserSources = await getBrowserSources();
-  for (const input of browserSources) {
-    if (
-      input.inputName === null ||
-      input.inputKind === null ||
-      input.inputName.toString().includes("--")
-    ) {
+  for (const { inputName, inputKind } of browserSources) {
+    if (!inputName || !inputKind) {
       continue;
     }
-    const inputName = input.inputName.toString();
-    const inputKind = input.inputKind.toString();
-
-    const sourceSettings = await send("GetInputSettings", {
-      inputName: inputName,
-    });
-    if (!sourceSettings.inputSettings.reroute_audio) {
+    const source = await getInputSettings(inputName);
+    if (!hasRerouteAudio(source)) {
       continue;
-    } else if (
-      typeof sourceSettings.inputSettings.url === "string" &&
-      sourceSettings.inputSettings.url.includes(streamHost)
-    ) {
+    } else if (inputURLContains(source, streamHost)) {
+      nodecg.log.info(
+        `Browser source found with url: ${source.inputSettings.url}`,
+      );
       setPlayerAudioSource(inputName);
     }
     const volume = await send("GetInputVolume", { inputName });
@@ -353,6 +305,7 @@ async function getAudioSources() {
 }
 
 async function setPlayerAudioSource(sourceName: string) {
+  nodecg.log.info("Setting player audio source " + sourceName);
   switch (true) {
     case sourceName.includes(`Player 1`):
       activeRunners.value[0].source = sourceName;
@@ -383,5 +336,3 @@ export async function setPlayerURL(index: number, player: ActiveRunners) {
     });
   }
 }
-
-
