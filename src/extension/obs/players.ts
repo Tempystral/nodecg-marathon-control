@@ -1,3 +1,4 @@
+import { activeRunner } from "@nmc/defaultValues";
 import { activeRunners } from "@nmc/util/replicants";
 import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 
@@ -8,18 +9,25 @@ import { RunDataTeam } from "speedcontrol-util/types/speedcontrol";
 export async function setPlayerAudioSource(sourceName: string) {
   switch (true) {
     case sourceName.includes(`Player 1`):
-      activeRunners.value[0].source = sourceName;
+      setActiveRunner(0, sourceName);
       break;
     case sourceName.includes(`Player 2`):
-      activeRunners.value[1].source = sourceName;
+      setActiveRunner(1, sourceName);
       break;
     case sourceName.includes(`Player 3`):
-      activeRunners.value[2].source = sourceName;
+      setActiveRunner(2, sourceName);
       break;
     case sourceName.includes(`Player 4`):
-      activeRunners.value[3].source = sourceName;
+      setActiveRunner(3, sourceName);
       break;
   }
+}
+
+function setActiveRunner(index: number, sourceName: string) {
+  if (!activeRunners.value[index]) {
+    activeRunners.value[index] = activeRunner;
+  }
+  activeRunners.value[index].source = sourceName;
 }
 
 /**

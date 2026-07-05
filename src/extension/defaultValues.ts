@@ -18,12 +18,6 @@ export const activeRunners: ActiveRunners[] = [
     server: "use",
     cam: true,
   },
-  /* {
-    source: null,
-    streamKey: null,
-    server: "use",
-    cam: true,
-  },
   {
     source: null,
     streamKey: null,
@@ -35,8 +29,21 @@ export const activeRunners: ActiveRunners[] = [
     streamKey: null,
     server: "use",
     cam: true,
-  }, */
+  },
+  {
+    source: null,
+    streamKey: null,
+    server: "use",
+    cam: true,
+  },
 ];
+
+export const activeRunner: ActiveRunners = {
+  source: null,
+  streamKey: null,
+  server: "use",
+  cam: true,
+};
 
 export const streamSync = {
   active: false,
