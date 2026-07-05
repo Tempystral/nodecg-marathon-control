@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setPlayerAudioSource = setPlayerAudioSource;
 exports.resetStreamKeys = resetStreamKeys;
 exports.updateStreamKeys = updateStreamKeys;
+const defaultValues_1 = require("@nmc/defaultValues");
 const replicants_1 = require("@nmc/util/replicants");
 /**
  * Set the audio source name into the activeRunners replicant
@@ -11,18 +12,24 @@ const replicants_1 = require("@nmc/util/replicants");
 async function setPlayerAudioSource(sourceName) {
     switch (true) {
         case sourceName.includes(`Player 1`):
-            replicants_1.activeRunners.value[0].source = sourceName;
+            setActiveRunner(0, sourceName);
             break;
         case sourceName.includes(`Player 2`):
-            replicants_1.activeRunners.value[1].source = sourceName;
+            setActiveRunner(1, sourceName);
             break;
         case sourceName.includes(`Player 3`):
-            replicants_1.activeRunners.value[2].source = sourceName;
+            setActiveRunner(2, sourceName);
             break;
         case sourceName.includes(`Player 4`):
-            replicants_1.activeRunners.value[3].source = sourceName;
+            setActiveRunner(3, sourceName);
             break;
     }
+}
+function setActiveRunner(index, sourceName) {
+    if (!replicants_1.activeRunners.value[index]) {
+        replicants_1.activeRunners.value[index] = defaultValues_1.activeRunner;
+    }
+    replicants_1.activeRunners.value[index].source = sourceName;
 }
 /**
  * Clear the stream keys from the activeRunners replicant

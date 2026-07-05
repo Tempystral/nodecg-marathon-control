@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adPlayer = exports.checklist = exports.streamData = exports.stats = exports.status = exports.settings = exports.botSettings = exports.botData = exports.autoRecord = exports.streamSync = exports.activeRunners = exports.audioSourceTypes = void 0;
+exports.adPlayer = exports.checklist = exports.streamData = exports.stats = exports.status = exports.settings = exports.botSettings = exports.botData = exports.autoRecord = exports.streamSync = exports.activeRunner = exports.activeRunners = exports.audioSourceTypes = void 0;
 exports.audioSourceTypes = [
     "wasapi_input_capture",
     "wasapi_output_capture",
@@ -17,25 +17,31 @@ exports.activeRunners = [
         server: "use",
         cam: true,
     },
-    /* {
-      source: null,
-      streamKey: null,
-      server: "use",
-      cam: true,
+    {
+        source: null,
+        streamKey: null,
+        server: "use",
+        cam: true,
     },
     {
-      source: null,
-      streamKey: null,
-      server: "use",
-      cam: true,
+        source: null,
+        streamKey: null,
+        server: "use",
+        cam: true,
     },
     {
-      source: null,
-      streamKey: null,
-      server: "use",
-      cam: true,
-    }, */
+        source: null,
+        streamKey: null,
+        server: "use",
+        cam: true,
+    },
 ];
+exports.activeRunner = {
+    source: null,
+    streamKey: null,
+    server: "use",
+    cam: true,
+};
 exports.streamSync = {
     active: false,
     status: {
