@@ -28,7 +28,7 @@ const { viewer } = nodecg.bundleConfig.rtmp;
 
 const wsUrl = `ws://${config.ip}:${config.port}`;
 
-obs.once("Identified", () => start(true));
+obs.on("Identified", () => start(true));
 
 //ws.on('InputVolumeMeters', (data) => nodecg.log.info(data.inputs[0].inputLevelsMul))
 
@@ -109,18 +109,6 @@ function previewIsIntermission() {
   );
 }
 
-// After setting up event hooks, connect
-nodecg.log.info(`Connecting to OBS at ${wsUrl}...`);
-obs
-  .connect(wsUrl, config.password, {
-    eventSubscriptions: EventSubscription.All,
-  })
-  .catch((e) => {
-    nodecg.log.error(`Could not connect to OBS at ${wsUrl}.`);
-    nodecg.log.error(e);
-    process.exit(1);
-  });
-
 async function websocketDisconnect() {
   nodecg.log.error("Disconnected from OBS! Attempting to reconnect...");
   audioSources.value = [];
@@ -133,18 +121,14 @@ async function websocketDisconnect() {
         obs.once("Identified", () => {
           nodecg.log.info("Reconnected to OBS!");
           clearInterval(reconnectInterval);
-          start(false);
+          start(true);
         });
       })
       .catch(() => {});
   }, 2500);
 }
 
-async function start(msg: boolean) {
-  if (msg) {
-    nodecg.log.info(`Successfully connected to OBS at ${wsUrl}`);
-  }
-
+async function start(isConnected?: boolean) {
   streamSync.value.status = {
     delays: false,
     syncing: false,
@@ -171,12 +155,18 @@ async function start(msg: boolean) {
     emergencyTransition: false,
     streaming: streamStatus.outputActive,
     recording: recordingStatus.outputActive,
+    connected: isConnected ?? false,
   };
 
   setIntervalAsync(updateStats, 2000);
 
   updateSceneList();
   updateAudioSources();
+
+  obs.once("ConnectionClosed", () => {
+    nodecg.log.info("Disconnected from OBS Studio!");
+    obsStatus.value.connected = false;
+  }); // Only enable this state once we've connected
 }
 
 async function updateStats() {

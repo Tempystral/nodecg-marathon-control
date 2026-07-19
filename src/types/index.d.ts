@@ -27,6 +27,8 @@ export interface OBSStatus {
   streaming: boolean;
   /** Is OBS recording? */
   recording: boolean;
+  /** Is the dashboard connected to OBS Studio? */
+  connected: boolean;
 }
 
 export interface SettingsReplicant {

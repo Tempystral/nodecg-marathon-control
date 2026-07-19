@@ -1,4 +1,9 @@
-import { ActiveRunners, OBSStats, SettingsReplicant } from "@nmc/types";
+import {
+  ActiveRunners,
+  OBSStats,
+  OBSStatus,
+  SettingsReplicant,
+} from "@nmc/types";
 import { ChecklistData } from "@nmc/types/schemas/ChecklistData";
 
 export const audioSourceTypes = [
@@ -87,7 +92,7 @@ export const settings: SettingsReplicant = {
   firstLaunch: true,
 };
 
-export const status = {
+export const status: OBSStatus = {
   previewScene: "",
   programScene: "",
   inIntermission: false,
@@ -95,6 +100,7 @@ export const status = {
   emergencyTransition: false,
   streaming: false,
   recording: false,
+  connected: false,
 };
 
 export const stats: OBSStats = {

@@ -28,10 +28,14 @@ async function send<Type extends keyof OBSRequestTypes>(
   });
 }
 
-function connect(ip: string, port: string, password: string) {
-  return ws.connect(`ws://${ip}:${port}`, password, {
+async function connect(ip: string, port: string, password: string) {
+  return await ws.connect(`ws://${ip}:${port}`, password, {
     eventSubscriptions: EventSubscription.All,
   });
 }
 
-export { ws, send, connect };
+async function disconnect() {
+  await ws.disconnect();
+}
+
+export { connect, disconnect, send, ws };
