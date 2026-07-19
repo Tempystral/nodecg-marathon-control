@@ -13,6 +13,7 @@ const obsStatus = useReplicant<OBSStatus>("obsStatus", undefined);
 
 const streamBtnDisabled = ref(false);
 const recordBtnDisabled = ref(false);
+const connectDisabled = ref(false);
 
 function toggleStream() {
   streamBtnDisabled.value = true;
@@ -24,6 +25,16 @@ function toggleRecording() {
   nodecg.sendMessage("toggleRecording");
 }
 
+function tryConnect() {
+  connectDisabled.value = true;
+  nodecg.sendMessage("connectOBS");
+}
+
+function tryDisconnect() {
+  connectDisabled.value = true;
+  nodecg.sendMessage("disconnectOBS");
+}
+
 watch(
   () => obsStatus.data,
   (newData, oldData) => {
@@ -32,6 +43,9 @@ watch(
     }
     if (newData?.recording != oldData?.recording) {
       recordBtnDisabled.value = false;
+    }
+    if (newData?.connected != oldData?.connected) {
+      connectDisabled.value = false;
     }
   },
 );
@@ -92,6 +106,14 @@ function toggleAutoRunner() {
       gap: 0.5em;
       margin-inline: 0.25em;
     ">
+    <Button
+      id="connect"
+      :disabled="connectDisabled"
+      :severity="obsStatus.data?.connected ? 'danger' : 'contrast'"
+      @click="obsStatus.data?.connected ? tryDisconnect() : tryConnect()">
+      {{ obsStatus.data?.connected ? "Disconnect" : "Connect to OBS Studio" }}
+    </Button>
+    <hr class="mx-4 my-2" />
     <Button
       id="toggleStream"
       :disabled="streamBtnDisabled"

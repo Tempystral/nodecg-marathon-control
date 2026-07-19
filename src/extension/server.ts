@@ -22,6 +22,8 @@ import { useWebsocketServer } from "./websocketServer";
 const nodecg = get();
 const viewer = nodecg.bundleConfig.rtmp.viewer;
 
+const config = nodecg.bundleConfig.websocket;
+
 const { wsPath, upgradeServer } = useWebsocketServer();
 const { upgrade } = useNodeCGRouter(nodecg);
 upgrade(wsPath, upgradeServer);
@@ -39,6 +41,31 @@ if (botSettings.value.active) {
       break;
   }
 } */
+
+nodecg.listenFor("connectOBS", websocketConnect);
+nodecg.listenFor("disconnectOBS", websocketDisconnect);
+
+function websocketConnect() {
+  // After setting up event hooks, connect
+  nodecg.log.info(`Connecting to OBS...`);
+  obs
+    .connect(config.ip, config.port, config.password)
+    .then((res) => {
+      nodecg.log.info(
+        `Successfully connected to OBS at ${config.ip} \
+        | websocket version ${res.obsWebSocketVersion}`,
+      );
+    })
+    .catch((e) => {
+      nodecg.log.error(`Could not connect to OBS at ${config.ip}.`);
+      nodecg.log.error(e);
+      //process.exit(1);
+    });
+}
+
+async function websocketDisconnect() {
+  await obs.disconnect();
+}
 
 // Listen for requests from clients.
 nodecg.listenFor("setPreviewScene", (value) =>
