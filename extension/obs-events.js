@@ -47,7 +47,7 @@ const nodecg = (0, nodecg_1.get)();
 const config = nodecg.bundleConfig.websocket;
 const { viewer } = nodecg.bundleConfig.rtmp;
 const wsUrl = `ws://${config.ip}:${config.port}`;
-websocket_1.ws.once("Identified", () => start(true));
+websocket_1.ws.on("Identified", () => start(true));
 //ws.on('InputVolumeMeters', (data) => nodecg.log.info(data.inputs[0].inputLevelsMul))
 // Listen to OBS events.
 // General events.
@@ -112,17 +112,6 @@ async function transition() {
 function previewIsIntermission() {
     return replicants_1.settings.value.intermissionScenes.includes(replicants_1.obsStatus.value.previewScene);
 }
-// After setting up event hooks, connect
-nodecg.log.info(`Connecting to OBS at ${wsUrl}...`);
-websocket_1.ws
-    .connect(wsUrl, config.password, {
-    eventSubscriptions: obs_websocket_js_1.EventSubscription.All,
-})
-    .catch((e) => {
-    nodecg.log.error(`Could not connect to OBS at ${wsUrl}.`);
-    nodecg.log.error(e);
-    process.exit(1);
-});
 async function websocketDisconnect() {
     nodecg.log.error("Disconnected from OBS! Attempting to reconnect...");
     replicants_1.audioSources.value = [];
@@ -135,16 +124,13 @@ async function websocketDisconnect() {
             websocket_1.ws.once("Identified", () => {
                 nodecg.log.info("Reconnected to OBS!");
                 clearInterval(reconnectInterval);
-                start(false);
+                start(true);
             });
         })
             .catch(() => { });
     }, 2500);
 }
-async function start(msg) {
-    if (msg) {
-        nodecg.log.info(`Successfully connected to OBS at ${wsUrl}`);
-    }
+async function start(isConnected) {
     replicants_1.streamSync.value.status = {
         delays: false,
         syncing: false,
@@ -166,10 +152,15 @@ async function start(msg) {
         emergencyTransition: false,
         streaming: streamStatus.outputActive,
         recording: recordingStatus.outputActive,
+        connected: isConnected ?? false,
     };
     (0, set_interval_async_1.setIntervalAsync)(updateStats, 2000);
     (0, scenes_1.updateSceneList)();
     updateAudioSources();
+    websocket_1.ws.once("ConnectionClosed", () => {
+        nodecg.log.info("Disconnected from OBS Studio!");
+        replicants_1.obsStatus.value.connected = false;
+    }); // Only enable this state once we've connected
 }
 async function updateStats() {
     const { renderSkippedFrames, renderTotalFrames, outputSkippedFrames, outputTotalFrames, ...data } = await (0, websocket_1.send)("GetStats");

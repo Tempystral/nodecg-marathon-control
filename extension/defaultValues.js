@@ -87,6 +87,7 @@ exports.status = {
     emergencyTransition: false,
     streaming: false,
     recording: false,
+    connected: false,
 };
 exports.stats = {
     cpuUsage: "0.0",

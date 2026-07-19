@@ -43,6 +43,7 @@ const replicants_1 = require("./util/replicants");
 const websocketServer_1 = require("./websocketServer");
 const nodecg = (0, nodecg_1.get)();
 const viewer = nodecg.bundleConfig.rtmp.viewer;
+const config = nodecg.bundleConfig.websocket;
 const { wsPath, upgradeServer } = (0, websocketServer_1.useWebsocketServer)();
 const { upgrade } = (0, router_1.useNodeCGRouter)(nodecg);
 upgrade(wsPath, upgradeServer);
@@ -59,6 +60,26 @@ if (botSettings.value.active) {
       break;
   }
 } */
+nodecg.listenFor("connectOBS", websocketConnect);
+nodecg.listenFor("disconnectOBS", websocketDisconnect);
+function websocketConnect() {
+    // After setting up event hooks, connect
+    nodecg.log.info(`Connecting to OBS...`);
+    obs
+        .connect(config.ip, config.port, config.password)
+        .then((res) => {
+        nodecg.log.info(`Successfully connected to OBS at ${config.ip} \
+        | websocket version ${res.obsWebSocketVersion}`);
+    })
+        .catch((e) => {
+        nodecg.log.error(`Could not connect to OBS at ${config.ip}.`);
+        nodecg.log.error(e);
+        //process.exit(1);
+    });
+}
+async function websocketDisconnect() {
+    await obs.disconnect();
+}
 // Listen for requests from clients.
 nodecg.listenFor("setPreviewScene", (value) => obs.send("SetCurrentPreviewScene", { sceneName: value }));
 nodecg.listenFor("startTransition", () => obs.send("TriggerStudioModeTransition"));

@@ -34,8 +34,9 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ws = void 0;
-exports.send = send;
 exports.connect = connect;
+exports.disconnect = disconnect;
+exports.send = send;
 const nodecg_1 = require("@nmc/util/nodecg");
 const obs_websocket_js_1 = __importStar(require("obs-websocket-js"));
 const nodecg = (0, nodecg_1.get)();
@@ -58,8 +59,11 @@ async function send(request, data) {
         });
     });
 }
-function connect(ip, port, password) {
-    return ws.connect(`ws://${ip}:${port}`, password, {
+async function connect(ip, port, password) {
+    return await ws.connect(`ws://${ip}:${port}`, password, {
         eventSubscriptions: obs_websocket_js_1.EventSubscription.All,
     });
+}
+async function disconnect() {
+    await ws.disconnect();
 }
