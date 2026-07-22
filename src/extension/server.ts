@@ -48,7 +48,7 @@ nodecg.listenFor("disconnectOBS", websocketDisconnect);
 function websocketConnect() {
   // After setting up event hooks, connect
   nodecg.log.info(`Connecting to OBS...`);
-  obs
+  return obs
     .connect(config.ip, config.port, config.password)
     .then((res) => {
       nodecg.log.info(
@@ -63,8 +63,13 @@ function websocketConnect() {
     });
 }
 
-async function websocketDisconnect() {
-  await obs.disconnect();
+// This is really stupid but it's the only way I can think of to
+// ensure you're connected before disconnecting again.
+function websocketDisconnect() {
+  obs
+    .connect(config.ip, config.port, config.password)
+    .then(obs.disconnect)
+    .then(() => (obsStatus.value.connected = false));
 }
 
 // Listen for requests from clients.
